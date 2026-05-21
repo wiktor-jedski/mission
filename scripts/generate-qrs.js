@@ -6,31 +6,27 @@ const DOMAIN = process.argv[2] || "https://mission-sable.vercel.app";
 const OUTPUT_DIR = path.join(process.cwd(), "public", "qr-codes");
 
 const QUESTS = [
-  { id: "quest-01", slug: "amber-vault-k9q4m2x7", title: "Pieczec Bursztynu" },
-  { id: "quest-02", slug: "silent-forge-p6t8n3v1", title: "Cicha Kuznia" },
-  { id: "quest-03", slug: "moonlit-riddle-x2c7b9h5", title: "Ksiezycowa Zagadka" },
-  { id: "quest-04", slug: "broken-compass-r8w1s6d4", title: "Zlamany Kompas" },
-  { id: "quest-05", slug: "river-oath-m5z9q2a8", title: "Przysiega Rzeki" },
-  { id: "quest-06", slug: "storm-banner-v7d3k1p9", title: "Sztandar Burzy" },
-  { id: "quest-07", slug: "hidden-crown-b4n8y6t2", title: "Ukryta Korona" },
-  { id: "quest-08", slug: "silver-goblet-f1h6r3w9", title: "Srebrny Kielich" },
-  { id: "quest-09", slug: "ashen-library-z8p2m5c7", title: "Popielna Biblioteka" },
-  { id: "quest-10", slug: "candle-bridge-t3q7x1n6", title: "Most Swiec" },
-  { id: "quest-11", slug: "wolfsbane-letter-h9v4d8s2", title: "List Wilczego Ziela" },
-  { id: "quest-12", slug: "obsidian-key-c6m1r9k4", title: "Obsydianowy Klucz" },
-  { id: "quest-13", slug: "mist-harbor-y2s8w5p1", title: "Mglisty Port" },
-  { id: "quest-14", slug: "golden-antler-n7b3x6q8", title: "Zloty Rog" },
-  { id: "quest-15", slug: "ember-choir-d5k9t2v7", title: "Chor Zarzewia" },
-  { id: "quest-16", slug: "frost-tower-q1r6c8m3", title: "Wieza Mrozu" },
-  { id: "quest-17", slug: "runic-kitchen-w4p7z2h8", title: "Runiczna Kuchnia" },
-  { id: "quest-18", slug: "crimson-lantern-m8x3n6b1", title: "Karmazynowa Latarnia" },
-  { id: "quest-19", slug: "starlit-ledger-k2d9v5s7", title: "Gwiazdowy Rejestr" },
-  { id: "quest-20", slug: "ivory-drum-p5h1q8r4", title: "Kosciowy Beben" },
-  { id: "quest-21", slug: "last-obelisk-s9c4m7x2", title: "Ostatni Obelisk" },
-  { id: "quest-22", slug: "shadow-market-b6v2t9d5", title: "Targ Cieni" },
-  { id: "quest-23", slug: "copper-mirror-r3y8k1p6", title: "Miedziane Lustro" },
-  { id: "quest-24", slug: "ancient-echo-x7n5h2w9", title: "Pradawne Echo" },
-  { id: "quest-25", slug: "final-sigil-l4q9c6z3", title: "Ostatni Znak" }
+  { id: "quest-01", slug: "amber-vault-k9q4m2x7", title: "Witamy w kolonii!" },
+  { id: "quest-02", slug: "silent-forge-p6t8n3v1", title: "Któryś za nas, cierpiał rany..." },
+  { id: "quest-03", slug: "moonlit-riddle-x2c7b9h5", title: "THIS. IS. SPARTA!!!" },
+  { id: "quest-04", slug: "broken-compass-r8w1s6d4", title: "Diss na mleko" },
+  { id: "quest-05", slug: "river-oath-m5z9q2a8", title: "Jesse We Need To Cook" },
+  { id: "quest-06", slug: "storm-banner-v7d3k1p9", title: "Litwo, ojczyzno moja..." },
+  { id: "quest-07", slug: "hidden-crown-b4n8y6t2", title: "Stworzenie Adama" },
+  { id: "quest-08", slug: "silver-goblet-f1h6r3w9", title: "Z kamerą wśród zwierząt" },
+  { id: "quest-09", slug: "ashen-library-z8p2m5c7", title: "Telezakupy Mango" },
+  { id: "quest-10", slug: "candle-bridge-t3q7x1n6", title: "Ginyu Force" },
+  { id: "quest-11", slug: "wolfsbane-letter-h9v4d8s2", title: "Ostatnie Pożegnanie" },
+  { id: "quest-12", slug: "obsidian-key-c6m1r9k4", title: "ASMR dla koneserów" },
+  { id: "quest-13", slug: "mist-harbor-y2s8w5p1", title: "Ofiara ceremonialna" },
+  { id: "quest-14", slug: "golden-antler-n7b3x6q8", title: "Haiku" },
+  { id: "quest-15", slug: "ember-choir-d5k9t2v7", title: "Makłowicz w podróży" },
+  { id: "quest-16", slug: "frost-tower-q1r6c8m3", title: "Wiadro" },
+  { id: "quest-17", slug: "runic-kitchen-w4p7z2h8", title: "Dekret" },
+  { id: "quest-18", slug: "crimson-lantern-m8x3n6b1", title: "Szympansy" },
+  { id: "quest-19", slug: "starlit-ledger-k2d9v5s7", title: "Na Łazarskim Rejonie" },
+  { id: "quest-20", slug: "ivory-drum-p5h1q8r4", title: "Jan Paweł DriII" },
+  { id: "quest-21", slug: "last-obelisk-s9c4m7x2", title: "The Imperial March" }
 ];
 
 async function generateQRs() {
@@ -196,7 +192,7 @@ async function generateQRs() {
   fs.writeFileSync(htmlPath, htmlContent);
   console.log(`[✓] Generated print sheet -> public/qr-codes/print.html`);
 
-  console.log(`\n🎉 Success! All 25 QR codes and the printable sheet are saved inside the "public/qr-codes" folder.`);
+  console.log(`\nSuccess! All 21 QR codes and the printable sheet are saved inside the "public/qr-codes" folder.`);
   console.log(`To print them, simply run the development server (npm run dev) and open:`);
   console.log(`👉 http://localhost:3000/qr-codes/print.html`);
   console.log(`Or double-click the file in your file explorer:`);

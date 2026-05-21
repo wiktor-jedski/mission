@@ -221,7 +221,7 @@ describe("SupabaseRuntimeRepository", () => {
     });
   });
 
-  it("runs phase 5 audit, hint, and override paths through Supabase tables", async () => {
+  it("runs phase 5 audit and override paths through Supabase tables", async () => {
     const fake = new FakeSupabase();
     const repository = new SupabaseRuntimeRepository(fake.client());
 
@@ -230,17 +230,6 @@ describe("SupabaseRuntimeRepository", () => {
     await repository.recordQuestView("team-ember", "quest-01");
     await repository.recordQuestView("missing", "quest-01");
     await repository.recordQuestView("team-ember", "missing");
-
-    await expect(
-      repository.useHint("team-ember", "amber-vault-k9q4m2x7")
-    ).resolves.toMatchObject({ status: "updated" });
-    fake.clearHint("quest-02");
-    await expect(
-      repository.useHint("team-ember", "silent-forge-p6t8n3v1")
-    ).resolves.toEqual({ status: "no_hint" });
-    await expect(repository.useHint("missing", "amber-vault-k9q4m2x7")).resolves.toEqual({
-      status: "not_found"
-    });
 
     await expect(repository.revealManualFragment({ teamId: "team-ember" })).resolves.toEqual({
       status: "updated"
@@ -443,12 +432,6 @@ class FakeSupabase {
   removeProgress(teamId: string, questId: string): void {
     this.tables.team_quest_progress = this.tables.team_quest_progress.filter(
       (row) => row.team_id !== teamId || row.quest_id !== questId
-    );
-  }
-
-  clearHint(questId: string): void {
-    this.tables.quests = this.tables.quests.map((row) =>
-      row.id === questId ? { ...row, hint_text: null } : row
     );
   }
 

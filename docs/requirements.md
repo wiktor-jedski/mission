@@ -71,7 +71,7 @@ The app is a one-off private event tool, not a reusable product.
 
 ### 5.1 Quest Count
 
-- Target quest count: 25.
+- Target quest count: 21.
 - Required approved quests to finish the map: 21.
 - All quests should be available from the start.
 - Quests should be casual and achievable on-site.
@@ -285,7 +285,7 @@ The app should keep a log of important actions, including:
 The minimum version that still delivers the game must include:
 
 - two team PIN logins
-- 25 hardcoded quest pages with unguessable slugs
+- 21 hardcoded quest pages with unguessable slugs
 - proof link or text submission
 - contributor name on submission
 - admin password login

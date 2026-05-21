@@ -10,7 +10,7 @@
 
 ### Required Map Progress
 
-- Decision: create 25 quests.
+- Decision: create 21 quests.
 - Decision: require 21 approved quests to reveal the full map.
 - Quest order does not matter; any approved quest reveals the next fixed fragment.
 
@@ -59,7 +59,7 @@
 - The app can be rugged and event-specific.
 - The operator fallback will live on the organizer's laptop.
 - Phase 1 seed team names, PIN hashes, quest titles, quest instructions, hints, and safety copy are implementation placeholders until final event content is supplied.
-- The 25 Phase 1 quest slugs are stable and unguessable enough for QR generation, but they should not be printed until the final quest copy is accepted.
+- The 21 Phase 1 quest slugs are stable and unguessable enough for QR generation.
 - Local development and automated tests may use fallback player PINs `1111` for `team-ember` and `2222` for `team-iron` when `TEAM_PINS` is not configured. Production should set `TEAM_PINS` explicitly.
 - Phase 3 runtime routes use the runtime repository boundary. Supabase is the required source of truth for deployed gameplay; the local repository path remains only for local development and tests when Supabase URL/key are absent.
 

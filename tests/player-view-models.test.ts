@@ -56,16 +56,6 @@ describe("player view models", () => {
     });
   });
 
-  it("tracks hint usage without inventing missing hint text", () => {
-    expect(
-      buildQuestViewModel(
-        { ...quest, hintText: null },
-        progress({ hintUsedAt: "2026-05-21T10:00:00.000Z" }),
-        []
-      )
-    ).toMatchObject({ hintUsed: true, hintText: null });
-  });
-
   it("builds team-scoped submission status rows without proof values", () => {
     expect(
       buildSubmissionStatusViews(

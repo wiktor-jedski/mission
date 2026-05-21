@@ -99,18 +99,22 @@ describe("player components", () => {
     expect(screen.getByLabelText("Link do zdjęcia")).toBeRequired();
     expect(screen.getByRole("alert")).toHaveTextContent("Sprawdz dane");
     expect(screen.getByRole("button", { name: "Wyślij dowód" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Pokaż podpowiedź" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Pokaż podpowiedź" })).not.toBeInTheDocument();
   });
 
-  it("renders used quest hints", () => {
+  it("renders seed URLs as clickable external links", () => {
     render(
       <QuestPageView
-        quest={questView({ hintUsed: true, hintText: "Szukaj przy kominku." })}
+        quest={questView({
+          instructions: "Zobacz https://example.com/instrukcja."
+        })}
       />
     );
 
-    expect(screen.getByText("Szukaj przy kominku.")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Pokaż podpowiedź" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "https://example.com/instrukcja" })).toHaveAttribute(
+      "href",
+      "https://example.com/instrukcja"
+    );
   });
 
   it("renders quest page with no status message", () => {
@@ -290,7 +294,6 @@ describe("phase 3 components", () => {
           auditEntry("team_login", {}),
           auditEntry("quest_viewed", { repeated: false }),
           auditEntry("submission_created", {}),
-          auditEntry("hint_used", {}),
           auditEntry("submission_approved", {}),
           auditEntry("submission_rejected", {}),
           auditEntry("manual_fragment_revealed", {}),
@@ -658,8 +661,6 @@ const questView = (overrides: Partial<QuestViewModel> = {}): QuestViewModel => (
   instructions: "Wykonaj misje.",
   successCriteria: "Pokaz wynik.",
   safetyWarning: "Bez szkody.",
-  hintText: null,
-  hintUsed: false,
   proofLabel: "Link do zdjęcia",
   statusMessage: "Misja gotowa do wykonania.",
   canSubmit: true,

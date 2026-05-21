@@ -8,15 +8,15 @@ import {
 } from "@/lib/seed/phase1";
 
 describe("Phase 1 seed data", () => {
-  it("contains exactly two teams, twenty-five quests, and complete initial progress", () => {
+  it("contains exactly two teams, twenty-one quests, and complete initial progress", () => {
     expect(validatePhase1SeedData()).toEqual({
       teamCount: 2,
-      questCount: 25,
-      progressCount: 50
+      questCount: 21,
+      progressCount: 42
     });
     expect(phase1Teams).toHaveLength(2);
-    expect(phase1Quests).toHaveLength(25);
-    expect(phase1TeamQuestProgress).toHaveLength(50);
+    expect(phase1Quests).toHaveLength(21);
+    expect(phase1TeamQuestProgress).toHaveLength(42);
   });
 
   it("validates slug shape and rejects predictable slug forms", () => {
@@ -30,8 +30,8 @@ describe("Phase 1 seed data", () => {
       "Expected 2 teams."
     );
     expect(() =>
-      validatePhase1SeedData(phase1Teams, phase1Quests.slice(0, 24))
-    ).toThrow("Expected 25 quests.");
+      validatePhase1SeedData(phase1Teams, phase1Quests.slice(0, 20))
+    ).toThrow("Expected 21 quests.");
     expect(() =>
       validatePhase1SeedData(phase1Teams, [
         phase1Quests[0],
@@ -68,9 +68,9 @@ describe("Phase 1 seed data", () => {
       validatePhase1SeedData(
         phase1Teams,
         phase1Quests,
-        phase1TeamQuestProgress.slice(0, 49)
+        phase1TeamQuestProgress.slice(0, 41)
       )
-    ).toThrow("Expected 50 progress rows.");
+    ).toThrow("Expected 42 progress rows.");
 
     expect(() =>
       validatePhase1SeedData(phase1Teams, phase1Quests, [

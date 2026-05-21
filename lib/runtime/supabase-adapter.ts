@@ -6,7 +6,6 @@ import {
   createReplacementProofDraft,
   createSubmissionDraft,
   hideManualFragment,
-  markHintUsed,
   overrideBrokenQuest,
   revealManualFragment,
   skipQuest
@@ -20,12 +19,12 @@ import type {
   Team,
   TeamQuestProgress
 } from "@/lib/domain/types";
+import { QUEST_COUNT, REQUIRED_APPROVAL_COUNT } from "@/lib/domain/constants";
 import type { Database, Json } from "@/lib/supabase/database.types";
 import type {
   AdminReviewActionResult,
   AdminOverrideResult,
   AuditLogEntry,
-  HintUsageResult,
   OverrideInput,
   PendingSubmissionReview,
   ReplacementProofInput,
@@ -237,40 +236,6 @@ export class SupabaseRuntimeRepository implements RuntimeRepository {
       submission: created.submission,
       progress: created.progress
     };
-  }
-
-  async useHint(teamId: string, questSlug: string): Promise<HintUsageResult> {
-    const access = await this.getQuestAccess(teamId, questSlug);
-
-    if (access.status === "not_found") {
-      return { status: "not_found" };
-    }
-
-    const usedAt = new Date().toISOString();
-
-    if (!access.quest.hintText?.trim()) {
-      return { status: "no_hint" };
-    }
-
-    const result = markHintUsed(access.quest, access.progress, usedAt);
-    const progressUpdate = await this.mutations()
-      .from("team_quest_progress")
-      .update(toProgressUpdate(result.progress, usedAt))
-      .eq("id", result.progress.id);
-    requireSuccess(progressUpdate);
-
-    if (result.newlyUsed) {
-      await this.writeAudit({
-        actor_type: "team",
-        actor_id: teamId,
-        action: "hint_used",
-        team_id: teamId,
-        quest_id: access.quest.id,
-        metadata: auditMetadata({ repeated: false })
-      });
-    }
-
-    return { status: "updated", progress: result.progress };
   }
 
   async getTeamMapState(teamId: string): Promise<MapProgressSnapshot> {
@@ -659,8 +624,8 @@ export class SupabaseRuntimeRepository implements RuntimeRepository {
     ).length;
     await this.updateTeamCounts({
       ...team,
-      completedQuestCount: Math.min(approvedCount, 25),
-      mapProgressCount: Math.min(approvedCount, 21)
+      completedQuestCount: Math.min(approvedCount, QUEST_COUNT),
+      mapProgressCount: Math.min(approvedCount, REQUIRED_APPROVAL_COUNT)
     });
   }
 

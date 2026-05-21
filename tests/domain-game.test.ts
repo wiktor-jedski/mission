@@ -9,7 +9,6 @@ import {
   createReplacementProofDraft,
   createSubmissionDraft,
   hideManualFragment,
-  markHintUsed,
   overrideBrokenQuest,
   rejectSubmission,
   revealManualFragment,
@@ -107,12 +106,12 @@ describe("calculateMapProgress", () => {
 
     expect(
       calculateMapProgress(
-        Array.from({ length: 25 }, (_, index) =>
+        Array.from({ length: 22 }, (_, index) =>
           progress({ id: `approved-${index}`, status: "approved" })
         )
       )
     ).toMatchObject({
-      approvedQuestCount: 25,
+      approvedQuestCount: 22,
       revealedFragmentCount: 21,
       isFinalUnlocked: true
     });
@@ -465,28 +464,9 @@ describe("phase 5 domain helpers", () => {
     expect(() => auditMetadata({ nested: { bad: true } })).toThrow(
       "Audit metadata value is invalid."
     );
-    expect(assertKnownAuditAction("hint_used")).toBe("hint_used");
     expect(() => assertKnownAuditAction("missing")).toThrow(
       "Audit action is invalid."
     );
-  });
-
-  it("marks hints idempotently without changing quest status", () => {
-    const first = markHintUsed(quest(), progress({ status: "approved" }), later);
-    expect(first).toMatchObject({
-      newlyUsed: true,
-      progress: { status: "approved", hintUsedAt: later }
-    });
-    expect(markHintUsed(quest(), first.progress, now)).toEqual({
-      newlyUsed: false,
-      progress: first.progress
-    });
-    expect(() => markHintUsed(quest({ hintText: null }), progress(), now)).toThrow(
-      "Quest has no hint."
-    );
-    expect(() =>
-      markHintUsed(quest({ id: "quest-02" }), progress(), now)
-    ).toThrow("Quest progress does not match quest.");
   });
 
   it("updates manual fragment counts with bounds", () => {
@@ -507,14 +487,14 @@ describe("phase 5 domain helpers", () => {
     );
 
     const overridden = overrideBrokenQuest(
-      team({ mapProgressCount: 20, completedQuestCount: 24 }),
+      team({ mapProgressCount: 20, completedQuestCount: 20 }),
       progress({ status: "skipped" }),
       later,
       "awaria"
     );
     expect(overridden).toMatchObject({
       newlyApproved: true,
-      team: { mapProgressCount: 21, completedQuestCount: 25 },
+      team: { mapProgressCount: 21, completedQuestCount: 21 },
       progress: { status: "approved", approvedAt: later, skippedAt: null }
     });
     expect(

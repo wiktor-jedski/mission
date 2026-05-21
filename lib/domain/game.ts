@@ -2,6 +2,7 @@ import {
   isAuditAction,
   isProofKind,
   isRejectionReason,
+  QUEST_COUNT,
   REQUIRED_APPROVAL_COUNT
 } from "./constants";
 import type {
@@ -13,7 +14,6 @@ import type {
 import type {
   AuditLog,
   MapProgressSnapshot,
-  Quest,
   Submission,
   Team,
   TeamQuestProgress
@@ -258,29 +258,6 @@ export const auditMetadata = (
   return metadata;
 };
 
-export const markHintUsed = (
-  quest: Quest,
-  progress: TeamQuestProgress,
-  usedAt: string
-): { progress: TeamQuestProgress; newlyUsed: boolean } => {
-  if (!quest.hintText?.trim()) {
-    throw new Error("Quest has no hint.");
-  }
-
-  if (quest.id !== progress.questId) {
-    throw new Error("Quest progress does not match quest.");
-  }
-
-  if (progress.hintUsedAt) {
-    return { progress, newlyUsed: false };
-  }
-
-  return {
-    progress: { ...progress, hintUsedAt: usedAt },
-    newlyUsed: true
-  };
-};
-
 export const revealManualFragment = (
   team: Team,
   requiredApprovalCount = REQUIRED_APPROVAL_COUNT
@@ -332,7 +309,7 @@ export const overrideBrokenQuest = (
     team: newlyApproved
       ? {
           ...team,
-          completedQuestCount: Math.min(team.completedQuestCount + 1, 25),
+          completedQuestCount: Math.min(team.completedQuestCount + 1, QUEST_COUNT),
           mapProgressCount: Math.min(
             team.mapProgressCount + 1,
             requiredApprovalCount

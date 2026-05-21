@@ -47,7 +47,7 @@
   Required constants:
 
   - 2 teams
-  - 25 quests
+  - 21 quests
   - 21 approvals required for full map reveal
   - submission statuses: pending, approved, rejected
   - team quest statuses: not_started, pending_review, approved, rejected, skipped
@@ -55,7 +55,7 @@
   Acceptance criteria:
 
   - Schema supports all MVP flows without direct media storage.
-  - Seed data creates two teams and 25 unguessable quest slugs.
+  - Seed data creates two teams and 21 unguessable quest slugs.
   - Domain tests cover map progress, duplicate submission prevention, rejection/resubmission, and 21-approval final unlock.
   - Audit-log helper exists for major actions.
   - 100% statements/branches/functions coverage passes.
@@ -105,7 +105,7 @@
   - App deploys to a public HTTPS Vercel URL.
   - Production Supabase variables are configured.
   - Quest URL list can be exported or copied for QR generation.
-  - All 25 quest URLs use unguessable slugs and work after deployment.
+  - All 21 quest URLs use unguessable slugs and work after deployment.
   - iPhone and Android smoke tests pass for login, quest view, proof submission, and map view.
   - Admin laptop smoke test passes for review and approval.
   - Operator fallback files are prepared locally: quest list, QR mapping, full map, final prize photo, and team progress tracker.

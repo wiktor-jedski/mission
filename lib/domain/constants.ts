@@ -1,5 +1,5 @@
 export const TEAM_COUNT = 2;
-export const QUEST_COUNT = 25;
+export const QUEST_COUNT = 21;
 export const REQUIRED_APPROVAL_COUNT = 21;
 
 export const SUBMISSION_STATUSES = [
@@ -36,7 +36,6 @@ export const AUDIT_ACTIONS = [
   "submission_created",
   "submission_approved",
   "submission_rejected",
-  "hint_used",
   "manual_fragment_revealed",
   "manual_fragment_hidden",
   "quest_skipped",

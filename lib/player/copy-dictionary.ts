@@ -50,8 +50,6 @@ export const PL_DICTIONARY = {
     instructionsHeading: "Instrukcja",
     successCriteriaHeading: "Warunek sukcesu",
     safetyHeading: "Bezpieczeństwo",
-    hintHeading: "Podpowiedź",
-    showHintButton: "Pokaż podpowiedź",
     contributorLabel: "Kto dodaje dowód",
     noteLabel: "Notatka dla mistrza gry",
     submitButton: "Wyślij dowód",

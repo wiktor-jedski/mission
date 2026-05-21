@@ -5,7 +5,6 @@ import {
   createAuditLog,
   createReplacementProofDraft,
   hideManualFragment,
-  markHintUsed,
   overrideBrokenQuest,
   rejectSubmission as rejectSubmissionDomain,
   revealManualFragment,
@@ -18,6 +17,7 @@ import type {
   Team,
   TeamQuestProgress
 } from "@/lib/domain/types";
+import { QUEST_COUNT, REQUIRED_APPROVAL_COUNT } from "@/lib/domain/constants";
 import {
   PlayerRepository,
   type PlayerRepositorySnapshot
@@ -26,7 +26,6 @@ import type {
   AdminReviewActionResult,
   AdminOverrideResult,
   AuditLogEntry,
-  HintUsageResult,
   OverrideInput,
   PendingSubmissionReview,
   ReplacementProofInput,
@@ -130,35 +129,6 @@ export class LocalRuntimeRepository implements RuntimeRepository {
     }
 
     return result;
-  }
-
-  async useHint(teamId: string, questSlug: string): Promise<HintUsageResult> {
-    const access = this.playerRepository.getQuestAccess(teamId, questSlug);
-
-    if (access.status === "not_found") {
-      return { status: "not_found" };
-    }
-
-    const usedAt = new Date().toISOString();
-
-    if (!access.quest.hintText?.trim()) {
-      return { status: "no_hint" };
-    }
-
-    const result = markHintUsed(access.quest, access.progress, usedAt);
-    this.playerRepository.replaceProgress(result.progress);
-    if (result.newlyUsed) {
-      this.appendAudit({
-        actorType: "team",
-        actorId: teamId,
-        action: "hint_used",
-        teamId,
-        questId: access.quest.id,
-        metadata: auditMetadata({ repeated: false }),
-        createdAt: usedAt
-      });
-    }
-    return { status: "updated", progress: result.progress };
   }
 
   async getTeamMapState(teamId: string) {
@@ -528,8 +498,8 @@ export class LocalRuntimeRepository implements RuntimeRepository {
     ).length;
     this.playerRepository.replaceTeam({
       ...team!,
-      completedQuestCount: Math.min(approvedCount, 25),
-      mapProgressCount: Math.min(approvedCount, 21)
+      completedQuestCount: Math.min(approvedCount, QUEST_COUNT),
+      mapProgressCount: Math.min(approvedCount, REQUIRED_APPROVAL_COUNT)
     });
   }
 

@@ -130,7 +130,7 @@ describe("PlayerRepository", () => {
     const rejected = repository.seedRejectedSubmission("team-ember", firstQuest.slug);
     const textRejected = repository.seedRejectedSubmission(
       "team-ember",
-      phase1Quests[2].slug
+      phase1Quests[4].slug
     );
 
     expect(rejected).toMatchObject({

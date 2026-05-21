@@ -53,11 +53,6 @@ export type RejectSubmissionInput = {
   message: string | null;
 };
 
-export type HintUsageResult =
-  | { status: "updated"; progress: TeamQuestProgress }
-  | { status: "not_found" }
-  | { status: "no_hint" };
-
 export type AuditLogEntry = {
   audit: AuditLog;
   team: Team | null;
@@ -91,7 +86,6 @@ export type RuntimeRepository = {
   recordQuestView(teamId: string, questId: string): Promise<void>;
   getTeamSubmissions(teamId: string): Promise<readonly Submission[]>;
   submitProof(input: SubmitProofInput): Promise<SubmitProofResult>;
-  useHint(teamId: string, questSlug: string): Promise<HintUsageResult>;
   getTeamMapState(teamId: string): Promise<MapProgressSnapshot>;
   listAuditLogs(limit?: number): Promise<readonly AuditLogEntry[]>;
   listPendingSubmissions(): Promise<readonly PendingSubmissionReview[]>;

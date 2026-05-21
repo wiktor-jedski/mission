@@ -87,8 +87,6 @@ const auditLabel = (action: string): string => {
       return "Otwarcie misji";
     case "submission_created":
       return "Nowe zgłoszenie";
-    case "hint_used":
-      return "Użycie podpowiedzi";
     case "submission_approved":
       return "Zatwierdzenie";
     case "submission_rejected":

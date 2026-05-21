@@ -29,7 +29,7 @@ Available commands:
 - `npm test` - run Vitest unit/integration tests.
 - `npm run test:e2e` - run the Playwright smoke test against the local app.
 - `npm run coverage` - run Vitest with V8 coverage and enforce 100% statements, branches, and functions for committed application code.
-- `APP_BASE_URL=https://your-game.vercel.app npm run export:quest-urls` - export the 25 quest URLs as CSV for QR generation.
+- `APP_BASE_URL=https://your-game.vercel.app npm run export:quest-urls` - export the 21 quest URLs as CSV for QR generation.
 
 ## Environment
 
@@ -67,7 +67,7 @@ Follow this guide to deploy the application for the live event.
    - Create another query, copy/paste the contents of [202605210002_phase3_review_functions.sql](file:///home/wiktor/Work/mission/supabase/migrations/202605210002_phase3_review_functions.sql), and run it. This installs the PL/pgSQL database functions used for atomic submission approvals and rejections (`approve_submission_for_review`, `reject_submission_for_review`).
 
 3. **Seed Quests and Teams:**
-   - Create another query, copy/paste the contents of [phase1_seed.sql](file:///home/wiktor/Work/mission/supabase/seeds/phase1_seed.sql), and run it. This seeds the 25 standard quests (under Polish titles like *Pieczęć Bursztynu*, *Cicha Kuźnia*, etc.) and registers the two default teams (`team-ember` / *Drużyna Zarzewia*, `team-iron` / *Drużyna Żelaza*).
+   - Create another query, copy/paste the contents of [phase1_seed.sql](file:///home/wiktor/Work/mission/supabase/seeds/phase1_seed.sql), and run it. This seeds the 21 standard quests from `misje.md` and registers the two default teams (`team-ember` / *Drużyna Zarzewia*, `team-iron` / *Drużyna Żelaza*).
    - > [!NOTE]
      > The database schema includes a `pin_hash` column. However, to keep PIN management secure and flexible without committing plaintexts, PIN verification is performed at runtime against the `TEAM_PINS` environment variable. The seeded database placeholder hashes do not affect login.
 
@@ -113,7 +113,7 @@ The game leverages unguessable 8-character suffix slugs for quests to prevent pl
    ```bash
    APP_BASE_URL=https://your-game.vercel.app npm run export:quest-urls
    ```
-2. Confirm the export contains exactly 25 rows, all with the final public base URL and no localhost or preview URL.
+2. Confirm the export contains exactly 21 rows, all with the final public base URL and no localhost or preview URL.
 3. As a production cross-check, compare the export against Supabase:
    ```sql
    select id, title, slug from public.quests where is_active = true;
@@ -165,7 +165,7 @@ Before the event, provide the final prize photo at `public/final-prize-photo.jpg
 
 Keep the local `fallback/` folder on the event laptop before leaving:
 
-- `fallback/quests.md` - all 25 quest identifiers and fallback instructions.
+- `fallback/quests.md` - all 21 quest identifiers and fallback instructions.
 - `fallback/qr-mapping.md` - QR labels, slugs, and quest URLs; replace `https://mission.example` with the final production URL.
 - `fallback/team-progress.md` - manual tracker for approvals, rejections, and revealed fragments.
 - `fallback/final-prize-photo.jpg` - local copy of the final prize image.

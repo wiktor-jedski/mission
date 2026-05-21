@@ -8,8 +8,6 @@ export type QuestViewModel = {
   instructions: string;
   successCriteria: string;
   safetyWarning: string;
-  hintText: string | null;
-  hintUsed: boolean;
   proofLabel: string;
   statusMessage: string;
   canSubmit: boolean;
@@ -44,8 +42,6 @@ export const buildQuestViewModel = (
     instructions: quest.instructions,
     successCriteria: quest.successCriteria,
     safetyWarning: quest.safetyWarning,
-    hintText: progress.hintUsedAt ? quest.hintText : null,
-    hintUsed: Boolean(progress.hintUsedAt),
     proofLabel: proofInputLabel(quest.proofKind),
     statusMessage: statusMessage(progress, activeSubmission, latestSubmission),
     canSubmit,

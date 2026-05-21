@@ -19,15 +19,15 @@ describe("quest URL export", () => {
   it("builds all production quest URLs from the base URL and seed slugs", () => {
     const rows = buildQuestUrlRows(phase1Quests, "https://mission.example/");
 
-    expect(rows).toHaveLength(25);
+    expect(rows).toHaveLength(21);
     expect(rows[0]).toEqual({
       number: 1,
       id: "quest-01",
-      title: "Pieczec Bursztynu",
+      title: "Witamy w kolonii!",
       slug: "amber-vault-k9q4m2x7",
       url: "https://mission.example/quests/amber-vault-k9q4m2x7"
     });
-    expect(new Set(rows.map((row) => row.url)).size).toBe(25);
+    expect(new Set(rows.map((row) => row.url)).size).toBe(21);
   });
 
   it("formats a copyable CSV for QR generation", () => {
@@ -76,8 +76,8 @@ describe("quest URL export", () => {
       "APP_BASE_URL must use HTTPS outside localhost."
     );
     expect(() =>
-      buildQuestUrlRows(phase1Quests.slice(0, 24), "https://mission.example")
-    ).toThrow("Expected 25 quests for QR export.");
+      buildQuestUrlRows(phase1Quests.slice(0, 20), "https://mission.example")
+    ).toThrow("Expected 21 quests for QR export.");
     expect(() =>
       buildQuestUrlRows(
         [

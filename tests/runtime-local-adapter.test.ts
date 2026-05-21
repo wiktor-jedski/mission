@@ -47,7 +47,7 @@ describe("LocalRuntimeRepository", () => {
     const repository = new LocalRuntimeRepository();
 
     await expect(repository.getTeams()).resolves.toHaveLength(2);
-    await expect(repository.getQuests()).resolves.toHaveLength(25);
+    await expect(repository.getQuests()).resolves.toHaveLength(21);
     await expect(repository.getTeam("missing")).resolves.toBeNull();
     await expect(repository.getQuestBySlug("bad slug")).resolves.toBeNull();
     await expect(repository.getQuestAccess("missing", firstSlug)).resolves.toEqual({
@@ -278,27 +278,13 @@ describe("LocalRuntimeRepository", () => {
     ).resolves.toEqual({ status: "invalid_transition" });
   });
 
-  it("records login, quest views, hints, audit entries, and overrides", async () => {
+  it("records login, quest views, audit entries, and overrides", async () => {
     const repository = new LocalRuntimeRepository();
     await repository.recordTeamLogin("team-ember");
     await repository.recordTeamLogin("missing");
     await repository.recordQuestView("team-ember", "quest-01");
     await repository.recordQuestView("missing", "quest-01");
     await repository.recordQuestView("team-ember", "missing");
-
-    await expect(repository.useHint("missing", firstSlug)).resolves.toEqual({
-      status: "not_found"
-    });
-    await expect(repository.useHint("team-ember", firstSlug)).resolves.toMatchObject({
-      status: "updated",
-      progress: { hintUsedAt: expect.any(String) }
-    });
-    await expect(repository.useHint("team-ember", firstSlug)).resolves.toMatchObject({
-      status: "updated"
-    });
-    await expect(
-      repository.useHint("team-ember", "moonlit-riddle-x2c7b9h5")
-    ).resolves.toMatchObject({ status: "updated" });
 
     await expect(repository.revealManualFragment({ teamId: "team-ember" })).resolves.toEqual({
       status: "updated"
@@ -390,13 +376,10 @@ describe("LocalRuntimeRepository", () => {
     ).resolves.toMatchObject({ status: "invalid_input" });
   });
 
-  it("handles phase 5 missing hint and missing audit context branches", async () => {
+  it("handles phase 5 missing audit context branches", async () => {
     const snapshot = createInitialSnapshot();
     const repository = new LocalRuntimeRepository({
       ...snapshot,
-      quests: snapshot.quests.map((quest) =>
-        quest.slug === firstSlug ? { ...quest, hintText: null } : quest
-      ),
       auditLogs: [
         {
           id: "audit-01",
@@ -423,9 +406,6 @@ describe("LocalRuntimeRepository", () => {
       ]
     });
 
-    await expect(repository.useHint("team-ember", firstSlug)).resolves.toEqual({
-      status: "no_hint"
-    });
     await expect(repository.listAuditLogs()).resolves.toMatchObject([
       { team: null, quest: null, submission: null },
       { team: null, quest: null, submission: null }

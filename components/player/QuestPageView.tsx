@@ -1,4 +1,5 @@
 import Link from "next/link";
+import type { ReactNode } from "react";
 import { PL_DICTIONARY } from "@/lib/player/copy-dictionary";
 import type { QuestViewModel } from "@/lib/player/view-models";
 
@@ -20,7 +21,7 @@ export function QuestPageView({ quest, error }: QuestPageViewProps) {
         <p className="eyebrow">{PL_DICTIONARY.quest.eyebrow}</p>
         <h1>{quest.title}</h1>
         <p style={{ fontSize: "1.1rem", fontStyle: "italic", color: "var(--text-muted)", marginTop: "0.5rem" }}>
-          {quest.flavorText}
+          <LinkedText text={quest.flavorText} />
         </p>
       </div>
 
@@ -29,39 +30,29 @@ export function QuestPageView({ quest, error }: QuestPageViewProps) {
           <h2 id="instructions-heading" style={{ fontSize: "1.15rem", borderBottom: "1px solid var(--border-color)", paddingBottom: "0.25rem" }}>
             {PL_DICTIONARY.quest.instructionsHeading}
           </h2>
-          <p style={{ marginBottom: 0 }}>{quest.instructions}</p>
+          <p style={{ marginBottom: 0 }}>
+            <LinkedText text={quest.instructions} />
+          </p>
         </section>
 
         <section aria-labelledby="criteria-heading" className="panel-rugged">
           <h2 id="criteria-heading" style={{ fontSize: "1.15rem", borderBottom: "1px solid var(--border-color)", paddingBottom: "0.25rem" }}>
             {PL_DICTIONARY.quest.successCriteriaHeading}
           </h2>
-          <p style={{ marginBottom: 0 }}>{quest.successCriteria}</p>
+          <p style={{ marginBottom: 0 }}>
+            <LinkedText text={quest.successCriteria} />
+          </p>
         </section>
 
         <section aria-labelledby="safety-heading" className="panel-rugged" style={{ borderColor: "#6b2626" }}>
           <h2 id="safety-heading" style={{ fontSize: "1.15rem", color: "#e67373", borderBottom: "1px solid #6b2626", paddingBottom: "0.25rem" }}>
             {PL_DICTIONARY.quest.safetyHeading}
           </h2>
-          <p style={{ marginBottom: 0 }}>{quest.safetyWarning}</p>
+          <p style={{ marginBottom: 0 }}>
+            <LinkedText text={quest.safetyWarning} />
+          </p>
         </section>
 
-        <section aria-labelledby="hint-heading" className="panel-rugged">
-          <h2 id="hint-heading" style={{ fontSize: "1.15rem", borderBottom: "1px solid var(--border-color)", paddingBottom: "0.25rem" }}>
-            {PL_DICTIONARY.quest.hintHeading}
-          </h2>
-          {quest.hintUsed && quest.hintText ? (
-            <p style={{ color: "var(--text-gold)", fontWeight: "500", marginBottom: 0 }}>
-              {quest.hintText}
-            </p>
-          ) : (
-            <form action={`/quests/${quest.slug}/hint`} method="post" style={{ marginTop: "0.5rem" }}>
-              <button type="submit" className="btn-tactile" style={{ minHeight: "2.5rem", fontSize: "0.85rem" }}>
-                {PL_DICTIONARY.quest.showHintButton}
-              </button>
-            </form>
-          )}
-        </section>
       </div>
 
       <div style={{ margin: "1.5rem 0" }}>
@@ -106,4 +97,41 @@ export function QuestPageView({ quest, error }: QuestPageViewProps) {
       ) : null}
     </main>
   );
+}
+
+const URL_PATTERN = /https?:\/\/[^\s<>"']+/g;
+const TRAILING_PUNCTUATION = /[.,!?;:)\]]+$/;
+
+function LinkedText({ text }: { text: string }) {
+  const parts: ReactNode[] = [];
+  let lastIndex = 0;
+
+  for (const match of text.matchAll(URL_PATTERN)) {
+    const rawUrl = match[0];
+    const startIndex = match.index ?? 0;
+    const trailing = rawUrl.match(TRAILING_PUNCTUATION)?.[0] ?? "";
+    const href = trailing ? rawUrl.slice(0, -trailing.length) : rawUrl;
+
+    if (startIndex > lastIndex) {
+      parts.push(text.slice(lastIndex, startIndex));
+    }
+
+    parts.push(
+      <a key={`${href}-${startIndex}`} href={href} target="_blank" rel="noreferrer">
+        {href}
+      </a>
+    );
+
+    if (trailing) {
+      parts.push(trailing);
+    }
+
+    lastIndex = startIndex + rawUrl.length;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+
+  return parts.length > 0 ? <>{parts}</> : <>{text}</>;
 }
