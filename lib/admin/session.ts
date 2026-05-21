@@ -75,6 +75,7 @@ export const parseAdminSession = (
 
 export const adminCookieOptions = () => ({
   httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
   sameSite: "lax" as const,
   path: "/admin",
   maxAge: ADMIN_SESSION_MAX_AGE_SECONDS
@@ -82,6 +83,7 @@ export const adminCookieOptions = () => ({
 
 export const clearAdminCookieOptions = () => ({
   httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
   sameSite: "lax" as const,
   path: "/admin",
   maxAge: 0

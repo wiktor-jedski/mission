@@ -19,7 +19,7 @@ export default async function QuestPage({ params, searchParams }: QuestPageProps
   }
 
   const query = await searchParams;
-  const error = query?.error === "invalid" ? "Sprawdz dane i sproboj ponownie." : undefined;
+  const error = query?.error === "invalid" ? "Sprawdz dane i sprobuj ponownie." : undefined;
 
   return (
     <QuestPageView

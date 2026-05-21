@@ -29,6 +29,7 @@ export async function POST(request: Request) {
   const cookieStore = await cookies();
   cookieStore.set(TEAM_SESSION_COOKIE, serializeTeamSession(session), {
     httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
     maxAge: TEAM_SESSION_MAX_AGE_SECONDS
