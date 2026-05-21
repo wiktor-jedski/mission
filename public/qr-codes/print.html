@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Drukuj Kody QR - Treasure Hunt</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 30px;
+      background: #f8f9fa;
+      color: #333;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    h1 {
+      margin: 0;
+      color: #1a1a1a;
+    }
+    p {
+      margin: 5px 0 0 0;
+      color: #666;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 25px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .card {
+      background: white;
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+      break-inside: avoid;
+      page-break-inside: avoid;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card h3 {
+      margin: 0 0 15px 0;
+      font-size: 1.1em;
+      color: #111;
+      border-bottom: 1px solid #eee;
+      width: 100%;
+      padding-bottom: 8px;
+    }
+    .card img {
+      width: 200px;
+      height: 200px;
+      margin-bottom: 15px;
+      display: block;
+    }
+    .card .url {
+      font-size: 0.7em;
+      color: #777;
+      word-break: break-all;
+      font-family: monospace;
+      max-width: 100%;
+    }
+    .print-btn {
+      display: block;
+      margin: 20px auto;
+      padding: 12px 24px;
+      background: #0070f3;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1em;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .print-btn:hover {
+      background: #0051cb;
+    }
+    @media print {
+      body {
+        background: white;
+        margin: 0;
+        padding: 0;
+      }
+      header, .print-btn {
+        display: none;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+      }
+      .card {
+        border: 2px dashed #999;
+        box-shadow: none;
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Wydruk Kodów QR - Treasure Hunt</h1>
+    <p>Poniższa strona jest zoptymalizowana do druku. Kliknij przycisk poniżej lub naciśnij Ctrl+P (Cmd+P) w przeglądarce, aby wydrukować wszystkie kody.</p>
+    <button class="print-btn" onclick="window.print()">Drukuj Kody</button>
+  </header>
+  <div class="grid">
+    
+    <div class="card">
+      <h3>QUEST-01</h3>
+      <img src="./quest-01-amber-vault-k9q4m2x7.png" alt="QUEST-01">
+      <div class="url">https://mission-sable.vercel.app/quests/amber-vault-k9q4m2x7</div>
+    </div>
+    <div class="card">
+      <h3>QUEST-02</h3>
+      <img src="./quest-02-silent-forge-p6t8n3v1.png" alt="QUEST-02">
+      <div class="url">https://mission-sable.vercel.app/quests/silent-forge-p6t8n3v1</div>
+    </div>
+    <div class="card">
+      <h3>QUEST-03</h3>
+      <img src="./quest-03-moonlit-riddle-x2c7b9h5.png" alt="QUEST-03">
+      <div class="url">https://mission-sable.vercel.app/quests/moonlit-riddle-x2c7b9h5</div>
+    </div>
+    <div class="card">
+      <h3>QUEST-04</h3>
+      <img src="./quest-04-broken-compass-r8w1s6d4.png" alt="QUEST-04">
+      <div class="url">https://mission-sable.vercel.app/quests/broken-compass-r8w1s6d4</div>
+    </div>
+    <div class="card">
+      <h3>QUEST-05</h3>
+      <img src="./quest-05-river-oath-m5z9q2a8.png" alt="QUEST-05">
+      <div class="url">https://mission-sable.vercel.app/quests/river-oath-m5z9q2a8</div>
+    </div>
+    <div class="card">
+      <h3>QUEST-06</h3>
+      <img src="./quest-06-storm-banner-v7d3k1p9.png" alt="QUEST-06">
+      <div class="url">https://mission-sable.vercel.app/quests/storm-banner-v7d3k1p9</div>
+    </div>
+    <div class="card">
+      <h3>QUEST-07</h3>
+      <img src="./quest-07-hidden-crown-b4n8y6t2.png" alt="QUEST-07">
+      <div class="url">https://mission-sable.vercel.app/quests/hidden-crown-b4n8y6t2</div>
+    </div>
+    <div class="card">
+      <h3>QUEST-08</h3>
+      <img src="./quest-08-silver-goblet-f1h6r3w9.png" alt="QUEST-08">
+      <div class="url">https://mission-sable.vercel.app/quests/silver-goblet-f1h6r3w9</div>
+    </div>
+    <div class="card">
+      <h3>QUEST-09</h3>
+      <img src="./quest-09-ashen-library-z8p2m5c7.png" alt="QUEST-09">
+      <div class="url">https://mission-sable.vercel.app/quests/ashen-library-z8p2m5c7</div>
+    </div>
+    <div class="card">
+      <h3>QUEST-10</h3>
+      <img src="./quest-10-candle-bridge-t3q7x1n6.png" alt="QUEST-10">
+      <div class="url">https://mission-sable.vercel.app/quests/candle-bridge-t3q7x1n6</div>
+    </div>
+    <div class="card">
+      <h3>QUEST-11</h3>
+      <img src="./quest-11-wolfsbane-letter-h9v4d8s2.png" alt="QUEST-11">
+      <div class="url">https://mission-sable.vercel.app/quests/wolfsbane-letter-h9v4d8s2</div>
+    </div>
+    <div class="card">
+      <h3>QUEST-12</h3>
+      <img src="./quest-12-obsidian-key-c6m1r9k4.png" alt="QUEST-12">
+      <div class="url">https://mission-sable.vercel.app/quests/obsidian-key-c6m1r9k4</div>
+    </div>
+    <div class="card">
+      <h3>QUEST-13</h3>
+      <img src="./quest-13-mist-harbor-y2s8w5p1.png" alt="QUEST-13">
+      <div class="url">https://mission-sable.vercel.app/quests/mist-harbor-y2s8w5p1</div>
+    </div>
+    <div class="card">
+      <h3>QUEST-14</h3>
+      <img src="./quest-14-golden-antler-n7b3x6q8.png" alt="QUEST-14">
+      <div class="url">https://mission-sable.vercel.app/quests/golden-antler-n7b3x6q8</div>
+    </div>
+    <div class="card">
+      <h3>QUEST-15</h3>
+      <img src="./quest-15-ember-choir-d5k9t2v7.png" alt="QUEST-15">
+      <div class="url">https://mission-sable.vercel.app/quests/ember-choir-d5k9t2v7</div>
+    </div>
+    <div class="card">
+      <h3>QUEST-16</h3>
+      <img src="./quest-16-frost-tower-q1r6c8m3.png" alt="QUEST-16">
+      <div class="url">https://mission-sable.vercel.app/quests/frost-tower-q1r6c8m3</div>
+    </div>
+    <div class="card">
+      <h3>QUEST-17</h3>
+      <img src="./quest-17-runic-kitchen-w4p7z2h8.png" alt="QUEST-17">
+      <div class="url">https://mission-sable.vercel.app/quests/runic-kitchen-w4p7z2h8</div>
+    </div>
+    <div class="card">
+      <h3>QUEST-18</h3>
+      <img src="./quest-18-crimson-lantern-m8x3n6b1.png" alt="QUEST-18">
+      <div class="url">https://mission-sable.vercel.app/quests/crimson-lantern-m8x3n6b1</div>
+    </div>
+    <div class="card">
+      <h3>QUEST-19</h3>
+      <img src="./quest-19-starlit-ledger-k2d9v5s7.png" alt="QUEST-19">
+      <div class="url">https://mission-sable.vercel.app/quests/starlit-ledger-k2d9v5s7</div>
+    </div>
+    <div class="card">
+      <h3>QUEST-20</h3>
+      <img src="./quest-20-ivory-drum-p5h1q8r4.png" alt="QUEST-20">
+      <div class="url">https://mission-sable.vercel.app/quests/ivory-drum-p5h1q8r4</div>
+    </div>
+    <div class="card">
+      <h3>QUEST-21</h3>
+      <img src="./quest-21-last-obelisk-s9c4m7x2.png" alt="QUEST-21">
+      <div class="url">https://mission-sable.vercel.app/quests/last-obelisk-s9c4m7x2</div>
+    </div>
+    <div class="card">
+      <h3>QUEST-22</h3>
+      <img src="./quest-22-shadow-market-b6v2t9d5.png" alt="QUEST-22">
+      <div class="url">https://mission-sable.vercel.app/quests/shadow-market-b6v2t9d5</div>
+    </div>
+    <div class="card">
+      <h3>QUEST-23</h3>
+      <img src="./quest-23-copper-mirror-r3y8k1p6.png" alt="QUEST-23">
+      <div class="url">https://mission-sable.vercel.app/quests/copper-mirror-r3y8k1p6</div>
+    </div>
+    <div class="card">
+      <h3>QUEST-24</h3>
+      <img src="./quest-24-ancient-echo-x7n5h2w9.png" alt="QUEST-24">
+      <div class="url">https://mission-sable.vercel.app/quests/ancient-echo-x7n5h2w9</div>
+    </div>
+    <div class="card">
+      <h3>QUEST-25</h3>
+      <img src="./quest-25-final-sigil-l4q9c6z3.png" alt="QUEST-25">
+      <div class="url">https://mission-sable.vercel.app/quests/final-sigil-l4q9c6z3</div>
+    </div>
+  </div>
+</body>
+</html>
