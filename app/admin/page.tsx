@@ -11,7 +11,12 @@ export default async function AdminPage({ searchParams }: AdminPageProps) {
   const query = await searchParams;
   const error =
     query?.error === "invalid" ? "Nie udalo sie wykonac akcji." : undefined;
-  const reviews = await getRuntimeRepository().listPendingSubmissions();
+  const repository = getRuntimeRepository();
+  const [reviews, teams, quests] = await Promise.all([
+    repository.listPendingSubmissions(),
+    repository.getTeams(),
+    repository.getQuests()
+  ]);
 
-  return <AdminReviewList reviews={reviews} error={error} />;
+  return <AdminReviewList reviews={reviews} teams={teams} quests={quests} error={error} />;
 }

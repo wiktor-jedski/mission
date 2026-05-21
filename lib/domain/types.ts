@@ -11,6 +11,8 @@ export type Team = {
   id: string;
   name: string;
   pinHash: string;
+  mapProgressCount: number;
+  completedQuestCount: number;
   createdAt: string;
 };
 

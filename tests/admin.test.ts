@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { resolveAdminAccess } from "@/lib/admin/auth-guard";
 import { verifyAdminPassword } from "@/lib/admin/password";
 import { validateReviewAction } from "@/lib/admin/review-actions";
+import { validateOverrideAction } from "@/lib/admin/override-actions";
 import {
   adminCookieOptions,
   clearAdminCookieOptions,
@@ -161,5 +162,226 @@ describe("review action validation", () => {
         message: "x".repeat(501)
       })
     ).toEqual({ valid: false, error: "Wiadomosc jest za dluga." });
+  });
+});
+
+describe("override action validation", () => {
+  it("validates all override action inputs", () => {
+    expect(validateOverrideAction({ action: "reveal", teamId: "team-ember" })).toEqual({
+      valid: true,
+      data: { action: "reveal", teamId: "team-ember" }
+    });
+    expect(
+      validateOverrideAction({
+        action: "hide",
+        teamId: "team-ember",
+        reason: " pomylka "
+      })
+    ).toEqual({
+      valid: true,
+      data: { action: "hide", teamId: "team-ember", reason: "pomylka" }
+    });
+    expect(
+      validateOverrideAction({
+        action: "skip",
+        teamId: "team-ember",
+        questId: "quest-01",
+        reason: "awaria"
+      })
+    ).toEqual({
+      valid: true,
+      data: {
+        action: "skip",
+        teamId: "team-ember",
+        questId: "quest-01",
+        reason: "awaria"
+      }
+    });
+    expect(
+      validateOverrideAction({
+        action: "override",
+        teamId: "team-ember",
+        questId: "quest-01",
+        reason: "awaria"
+      })
+    ).toMatchObject({ valid: true });
+    expect(
+      validateOverrideAction({
+        action: "replacement",
+        teamId: "team-ember",
+        questId: "quest-01",
+        contributorName: " Admin ",
+        proofKind: "text_response",
+        proofValue: " odpowiedz ",
+        note: " note ",
+        status: "approved"
+      })
+    ).toEqual({
+      valid: true,
+      data: {
+        action: "replacement",
+        teamId: "team-ember",
+        questId: "quest-01",
+        contributorName: "Admin",
+        proofKind: "text_response",
+        proofValue: "odpowiedz",
+        note: "note",
+        status: "approved"
+      }
+    });
+  });
+
+  it("rejects unsafe override action inputs", () => {
+    expect(validateOverrideAction({ action: "reveal", teamId: "bad id" })).toEqual({
+      valid: false,
+      error: "Nieprawidlowa druzyna."
+    });
+    expect(validateOverrideAction({ action: "reveal" })).toEqual({
+      valid: false,
+      error: "Nieprawidlowa druzyna."
+    });
+    expect(validateOverrideAction({ action: "hide", teamId: "team-ember" })).toEqual({
+      valid: false,
+      error: "Podaj powod."
+    });
+    expect(
+      validateOverrideAction({
+        action: "hide",
+        teamId: "team-ember",
+        reason: "x".repeat(301)
+      })
+    ).toEqual({ valid: false, error: "Powod jest za dlugi." });
+    expect(
+      validateOverrideAction({
+        action: "skip",
+        teamId: "team-ember",
+        questId: "bad id",
+        reason: "awaria"
+      })
+    ).toEqual({ valid: false, error: "Nieprawidlowa misja." });
+    expect(
+      validateOverrideAction({
+        action: "override",
+        teamId: "team-ember",
+        questId: "quest-01",
+        reason: ""
+      })
+    ).toEqual({ valid: false, error: "Podaj powod." });
+    expect(validateOverrideAction({ action: "delete", teamId: "team-ember" })).toEqual({
+      valid: false,
+      error: "Nieznana akcja."
+    });
+    expect(validateOverrideAction({ teamId: "team-ember" })).toEqual({
+      valid: false,
+      error: "Nieznana akcja."
+    });
+    expect(
+      validateOverrideAction({
+        action: "replacement",
+        teamId: "team-ember",
+        questId: "quest-01",
+        proofKind: "photo_link",
+        proofValue: "https://example.com",
+        status: "pending"
+      })
+    ).toEqual({ valid: false, error: "Podaj autora dowodu." });
+    expect(
+      validateOverrideAction({
+        action: "replacement",
+        teamId: "team-ember",
+        questId: "quest-01",
+        contributorName: "Admin",
+        proofValue: "https://example.com",
+        status: "pending"
+      })
+    ).toEqual({ valid: false, error: "Wybierz typ dowodu." });
+    expect(
+      validateOverrideAction({
+        action: "replacement",
+        teamId: "team-ember",
+        questId: "quest-01",
+        contributorName: "Admin",
+        proofKind: "photo_link",
+        status: "pending"
+      })
+    ).toEqual({ valid: false, error: "Podaj dowod." });
+    expect(
+      validateOverrideAction({
+        action: "replacement",
+        teamId: "team-ember",
+        questId: "quest-01",
+        contributorName: "Admin",
+        proofKind: "upload",
+        proofValue: "https://example.com",
+        status: "pending"
+      })
+    ).toEqual({ valid: false, error: "Wybierz typ dowodu." });
+    expect(
+      validateOverrideAction({
+        action: "replacement",
+        teamId: "team-ember",
+        questId: "quest-01",
+        contributorName: "Admin",
+        proofKind: "photo_link",
+        proofValue: "",
+        status: "pending"
+      })
+    ).toEqual({ valid: false, error: "Podaj dowod." });
+    expect(
+      validateOverrideAction({
+        action: "replacement",
+        teamId: "team-ember",
+        questId: "bad id",
+        contributorName: "Admin",
+        proofKind: "text_response",
+        proofValue: "ok",
+        status: "pending"
+      })
+    ).toEqual({ valid: false, error: "Nieprawidlowa misja." });
+    expect(
+      validateOverrideAction({
+        action: "replacement",
+        teamId: "team-ember",
+        questId: "quest-01",
+        contributorName: "Admin",
+        proofKind: "photo_link",
+        proofValue: "not a url",
+        status: "pending"
+      })
+    ).toEqual({ valid: false, error: "Dowod musi byc linkiem HTTP." });
+    expect(
+      validateOverrideAction({
+        action: "replacement",
+        teamId: "team-ember",
+        questId: "quest-01",
+        contributorName: "Admin",
+        proofKind: "photo_link",
+        proofValue: "http://example.com",
+        status: "pending"
+      })
+    ).toMatchObject({ valid: true });
+    expect(
+      validateOverrideAction({
+        action: "replacement",
+        teamId: "team-ember",
+        questId: "quest-01",
+        contributorName: "Admin",
+        proofKind: "text_response",
+        proofValue: "ok",
+        note: "x".repeat(501),
+        status: "pending"
+      })
+    ).toEqual({ valid: false, error: "Notatka jest za dluga." });
+    expect(
+      validateOverrideAction({
+        action: "replacement",
+        teamId: "team-ember",
+        questId: "quest-01",
+        contributorName: "Admin",
+        proofKind: "text_response",
+        proofValue: "ok",
+        status: "done"
+      })
+    ).toEqual({ valid: false, error: "Wybierz status dowodu." });
   });
 });

@@ -1,10 +1,18 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import {
+  auditMetadata,
   calculateMapProgress,
   canSubmitProof,
-  createSubmissionDraft
+  createReplacementProofDraft,
+  createSubmissionDraft,
+  hideManualFragment,
+  markHintUsed,
+  overrideBrokenQuest,
+  revealManualFragment,
+  skipQuest
 } from "@/lib/domain/game";
 import type {
+  AuditLog,
   AppSettings,
   MapProgressSnapshot,
   Quest,
@@ -15,7 +23,12 @@ import type {
 import type { Database, Json } from "@/lib/supabase/database.types";
 import type {
   AdminReviewActionResult,
+  AdminOverrideResult,
+  AuditLogEntry,
+  HintUsageResult,
+  OverrideInput,
   PendingSubmissionReview,
+  ReplacementProofInput,
   QuestAccessResult,
   RejectSubmissionInput,
   RuntimeRepository,
@@ -59,6 +72,7 @@ type QuestRow = Database["public"]["Tables"]["quests"]["Row"];
 type ProgressRow = Database["public"]["Tables"]["team_quest_progress"]["Row"];
 type SubmissionRow = Database["public"]["Tables"]["submissions"]["Row"];
 type AppSettingsRow = Database["public"]["Tables"]["app_settings"]["Row"];
+type AuditRow = Database["public"]["Tables"]["audit_logs"]["Row"];
 
 export class SupabaseRuntimeRepository implements RuntimeRepository {
   constructor(private readonly client: SupabaseClient<Database>) {}
@@ -119,6 +133,38 @@ export class SupabaseRuntimeRepository implements RuntimeRepository {
     const submissions = await this.getTeamQuestSubmissions(team.id, quest.id);
 
     return { status: "found", quest, progress, submissions };
+  }
+
+  async recordTeamLogin(teamId: string): Promise<void> {
+    const team = await this.getTeam(teamId);
+    if (!team) {
+      return;
+    }
+
+    await this.writeAudit({
+      actor_type: "team",
+      actor_id: teamId,
+      action: "team_login",
+      team_id: teamId
+    });
+  }
+
+  async recordQuestView(teamId: string, questId: string): Promise<void> {
+    const [team, quest] = await Promise.all([
+      this.getTeam(teamId),
+      this.getQuestById(questId)
+    ]);
+    if (!team || !quest) {
+      return;
+    }
+
+    await this.writeAudit({
+      actor_type: "team",
+      actor_id: teamId,
+      action: "quest_viewed",
+      team_id: teamId,
+      quest_id: questId
+    });
   }
 
   async getTeamSubmissions(teamId: string): Promise<readonly Submission[]> {
@@ -193,10 +239,70 @@ export class SupabaseRuntimeRepository implements RuntimeRepository {
     };
   }
 
+  async useHint(teamId: string, questSlug: string): Promise<HintUsageResult> {
+    const access = await this.getQuestAccess(teamId, questSlug);
+
+    if (access.status === "not_found") {
+      return { status: "not_found" };
+    }
+
+    const usedAt = new Date().toISOString();
+
+    if (!access.quest.hintText?.trim()) {
+      return { status: "no_hint" };
+    }
+
+    const result = markHintUsed(access.quest, access.progress, usedAt);
+    const progressUpdate = await this.mutations()
+      .from("team_quest_progress")
+      .update(toProgressUpdate(result.progress, usedAt))
+      .eq("id", result.progress.id);
+    requireSuccess(progressUpdate);
+
+    if (result.newlyUsed) {
+      await this.writeAudit({
+        actor_type: "team",
+        actor_id: teamId,
+        action: "hint_used",
+        team_id: teamId,
+        quest_id: access.quest.id,
+        metadata: auditMetadata({ repeated: false })
+      });
+    }
+
+    return { status: "updated", progress: result.progress };
+  }
+
   async getTeamMapState(teamId: string): Promise<MapProgressSnapshot> {
-    const progressRows = await this.getTeamProgressRows(teamId);
+    const [progressRows, team] = await Promise.all([
+      this.getTeamProgressRows(teamId),
+      this.getTeam(teamId)
+    ]);
     const settings = await this.getAppSettings();
-    return calculateMapProgress(progressRows, settings.requiredApprovalCount);
+    return calculateMapProgress(
+      progressRows,
+      settings.requiredApprovalCount,
+      team?.mapProgressCount
+    );
+  }
+
+  async listAuditLogs(limit = 100): Promise<readonly AuditLogEntry[]> {
+    const result = await this.client
+      .from("audit_logs")
+      .select("*")
+      .order("created_at", { ascending: false });
+    const audits = requireRows(result).map(mapAudit).slice(0, limit);
+    const entries = await Promise.all(
+      audits.map(async (audit) => ({
+        audit,
+        team: audit.teamId ? await this.getTeam(audit.teamId) : null,
+        quest: audit.questId ? await this.getQuestById(audit.questId) : null,
+        submission: audit.submissionId
+          ? await this.getSubmissionById(audit.submissionId)
+          : null
+      }))
+    );
+    return entries;
   }
 
   async listPendingSubmissions(): Promise<readonly PendingSubmissionReview[]> {
@@ -240,10 +346,11 @@ export class SupabaseRuntimeRepository implements RuntimeRepository {
     }
 
     const reviewedAt = new Date().toISOString();
-    await this.rpc().rpc("approve_submission_for_review", {
+    requireSuccess(await this.rpc().rpc("approve_submission_for_review", {
       reviewed_submission_id: submissionId,
       reviewed_at_value: reviewedAt
-    });
+    }));
+    await this.syncTeamCounts(current.submission.teamId);
     const review = await this.buildReview({
       ...current.submission,
       status: "approved",
@@ -265,12 +372,13 @@ export class SupabaseRuntimeRepository implements RuntimeRepository {
     }
 
     const reviewedAt = new Date().toISOString();
-    await this.rpc().rpc("reject_submission_for_review", {
+    requireSuccess(await this.rpc().rpc("reject_submission_for_review", {
       reviewed_submission_id: input.submissionId,
       rejection_reason_value: input.reason,
       rejection_message_value: input.message?.trim() || null,
       reviewed_at_value: reviewedAt
-    });
+    }));
+    await this.syncTeamCounts(current.submission.teamId);
     const review = await this.buildReview({
       ...current.submission,
       status: "rejected",
@@ -280,6 +388,120 @@ export class SupabaseRuntimeRepository implements RuntimeRepository {
     });
 
     return review ? { status: "updated", review } : { status: "not_found" };
+  }
+
+  async revealManualFragment(input: OverrideInput): Promise<AdminOverrideResult> {
+    const team = await this.getTeam(input.teamId);
+    if (!team) {
+      return { status: "not_found" };
+    }
+
+    const updated = revealManualFragment(team);
+    await this.updateTeamCounts(updated);
+    await this.writeOverrideAudit("manual_fragment_revealed", input);
+    return { status: "updated" };
+  }
+
+  async hideManualFragment(input: OverrideInput): Promise<AdminOverrideResult> {
+    const team = await this.getTeam(input.teamId);
+    if (!team) {
+      return { status: "not_found" };
+    }
+
+    const updated = hideManualFragment(team);
+    await this.updateTeamCounts(updated);
+    await this.writeOverrideAudit("manual_fragment_hidden", input);
+    return { status: "updated" };
+  }
+
+  async skipQuest(input: Required<OverrideInput>): Promise<AdminOverrideResult> {
+    const context = await this.getTeamQuestContext(input.teamId, input.questId);
+    if (!context) {
+      return { status: "not_found" };
+    }
+
+    try {
+      const skipped = skipQuest(context.progress, new Date().toISOString(), input.reason);
+      requireSuccess(
+        await this.mutations()
+          .from("team_quest_progress")
+          .update(toProgressUpdate(skipped, skipped.skippedAt!))
+          .eq("id", skipped.id)
+      );
+      await this.writeOverrideAudit("quest_skipped", input);
+      return { status: "updated" };
+    } catch (error) {
+      return invalidInput(error);
+    }
+  }
+
+  async overrideBrokenQuest(
+    input: Required<OverrideInput>
+  ): Promise<AdminOverrideResult> {
+    const context = await this.getTeamQuestContext(input.teamId, input.questId);
+    if (!context) {
+      return { status: "not_found" };
+    }
+
+    try {
+      const approvedAt = new Date().toISOString();
+      const overridden = overrideBrokenQuest(
+        context.team,
+        context.progress,
+        approvedAt,
+        input.reason
+      );
+      await this.updateTeamCounts(overridden.team);
+      requireSuccess(
+        await this.mutations()
+          .from("team_quest_progress")
+          .update(toProgressUpdate(overridden.progress, approvedAt))
+          .eq("id", overridden.progress.id)
+      );
+      await this.writeOverrideAudit("broken_quest_overridden", input);
+      return { status: "updated" };
+    } catch (error) {
+      return invalidInput(error);
+    }
+  }
+
+  async enterReplacementProof(
+    input: ReplacementProofInput
+  ): Promise<AdminOverrideResult> {
+    const context = await this.getTeamQuestContext(input.teamId, input.questId);
+    if (!context) {
+      return { status: "not_found" };
+    }
+
+    try {
+      const submittedAt = new Date().toISOString();
+      const submission = createReplacementProofDraft(
+        {
+          id: crypto.randomUUID(),
+          teamId: input.teamId,
+          questId: input.questId,
+          contributorName: input.contributorName,
+          proofKind: input.proofKind,
+          proofValue: input.proofValue,
+          note: input.note,
+          status: input.status
+        },
+        submittedAt
+      );
+      requireSuccess(
+        await this.mutations()
+          .from("submissions")
+          .insert([toSubmissionInsert(submission)])
+      );
+      await this.writeOverrideAudit(
+        "replacement_proof_entered",
+        { teamId: input.teamId, questId: input.questId, reason: input.status },
+        submission.id
+      );
+      return { status: "updated" };
+    } catch (error) {
+      return invalidInput(error);
+    }
   }
 
   private async getOrCreateProgress(
@@ -371,6 +593,15 @@ export class SupabaseRuntimeRepository implements RuntimeRepository {
     return maybeRow(result, mapQuest);
   }
 
+  private async getSubmissionById(submissionId: string): Promise<Submission | null> {
+    const result = await this.client
+      .from("submissions")
+      .select("*")
+      .eq("id", submissionId)
+      .maybeSingle();
+    return maybeRow(result, mapSubmission);
+  }
+
   private async getProgressByTeamQuest(
     teamId: string,
     questId: string
@@ -390,6 +621,84 @@ export class SupabaseRuntimeRepository implements RuntimeRepository {
 
   private mutations(): LooseMutationClient {
     return this.client as unknown as LooseMutationClient;
+  }
+
+  private async getTeamQuestContext(teamId: string, questId: string) {
+    const [team, quest, progress] = await Promise.all([
+      this.getTeam(teamId),
+      this.getQuestById(questId),
+      this.getProgressByTeamQuest(teamId, questId)
+    ]);
+
+    return team && quest && progress ? { team, quest, progress } : null;
+  }
+
+  private async updateTeamCounts(team: Team): Promise<void> {
+    requireSuccess(
+      await this.mutations()
+        .from("teams")
+        .update({
+          map_progress_count: team.mapProgressCount,
+          completed_quest_count: team.completedQuestCount
+        })
+        .eq("id", team.id)
+    );
+  }
+
+  private async syncTeamCounts(teamId: string): Promise<void> {
+    const [team, progressRows] = await Promise.all([
+      this.getTeam(teamId),
+      this.getTeamProgressRows(teamId)
+    ]);
+    if (!team) {
+      return;
+    }
+
+    const approvedCount = progressRows.filter(
+      (progress) => progress.status === "approved"
+    ).length;
+    await this.updateTeamCounts({
+      ...team,
+      completedQuestCount: Math.min(approvedCount, 25),
+      mapProgressCount: Math.min(approvedCount, 21)
+    });
+  }
+
+  private async writeOverrideAudit(
+    action:
+      | "manual_fragment_revealed"
+      | "manual_fragment_hidden"
+      | "quest_skipped"
+      | "broken_quest_overridden"
+      | "replacement_proof_entered",
+    input: OverrideInput,
+    submissionId?: string
+  ): Promise<void> {
+    await this.writeAudit({
+      actor_type: "admin",
+      action,
+      team_id: input.teamId,
+      quest_id: input.questId ?? null,
+      submission_id: submissionId ?? null,
+      metadata: auditMetadata({ reason: input.reason ?? null })
+    });
+  }
+
+  private async writeAudit(
+    insert: Omit<
+      Database["public"]["Tables"]["audit_logs"]["Insert"],
+      "id" | "created_at"
+    > & { created_at?: string }
+  ): Promise<void> {
+    requireSuccess(
+      await this.mutations()
+        .from("audit_logs")
+        .insert({
+          id: crypto.randomUUID(),
+          created_at: new Date().toISOString(),
+          ...insert
+        })
+    );
   }
 }
 
@@ -437,6 +746,8 @@ export const mapTeam = (row: TeamRow): Team => ({
   id: row.id,
   name: row.name,
   pinHash: row.pin_hash,
+  mapProgressCount: row.map_progress_count,
+  completedQuestCount: row.completed_quest_count,
   createdAt: row.created_at
 });
 
@@ -483,6 +794,21 @@ export const mapAppSettings = (row: AppSettingsRow): AppSettings => ({
   isPaused: row.is_paused
 });
 
+export const mapAudit = (row: AuditRow): AuditLog => ({
+  id: row.id,
+  actorType: row.actor_type,
+  actorId: row.actor_id,
+  action: row.action,
+  teamId: row.team_id,
+  questId: row.quest_id,
+  submissionId: row.submission_id,
+  metadata:
+    row.metadata && typeof row.metadata === "object" && !Array.isArray(row.metadata)
+      ? (row.metadata as Record<string, unknown>)
+      : {},
+  createdAt: row.created_at
+});
+
 const toSubmissionInsert = (
   submission: Submission
 ): Database["public"]["Tables"]["submissions"]["Insert"] => ({
@@ -513,3 +839,8 @@ const toProgressUpdate = (
 
 const isSafeId = (value: string): boolean =>
   /^[a-zA-Z0-9_-]{1,120}$/.test(value);
+
+const invalidInput = (error: unknown): AdminOverrideResult => ({
+  status: "invalid_input",
+  error: String(error)
+});

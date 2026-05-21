@@ -1,4 +1,5 @@
 import {
+  isAuditAction,
   isProofKind,
   isRejectionReason,
   REQUIRED_APPROVAL_COUNT
@@ -12,7 +13,9 @@ import type {
 import type {
   AuditLog,
   MapProgressSnapshot,
+  Quest,
   Submission,
+  Team,
   TeamQuestProgress
 } from "./types";
 
@@ -40,7 +43,8 @@ type AuditInput = {
 
 export const calculateMapProgress = (
   progressRows: readonly TeamQuestProgress[],
-  requiredApprovalCount = REQUIRED_APPROVAL_COUNT
+  requiredApprovalCount = REQUIRED_APPROVAL_COUNT,
+  manualRevealedFragmentCount?: number
 ): MapProgressSnapshot => {
   if (requiredApprovalCount < 1) {
     throw new Error("Required approval count must be positive.");
@@ -50,7 +54,7 @@ export const calculateMapProgress = (
     (progress) => progress.status === "approved"
   ).length;
   const revealedFragmentCount = Math.min(
-    approvedQuestCount,
+    manualRevealedFragmentCount ?? approvedQuestCount,
     requiredApprovalCount
   );
 
@@ -58,7 +62,7 @@ export const calculateMapProgress = (
     approvedQuestCount,
     revealedFragmentCount,
     requiredApprovalCount,
-    isFinalUnlocked: approvedQuestCount >= requiredApprovalCount
+    isFinalUnlocked: revealedFragmentCount >= requiredApprovalCount
   };
 };
 
@@ -225,6 +229,160 @@ export const createAuditLog = (input: AuditInput): AuditLog => ({
   metadata: input.metadata ?? {},
   createdAt: input.createdAt
 });
+
+export const auditMetadata = (
+  input: Record<string, unknown>
+): Record<string, string | number | boolean | null> => {
+  const metadata: Record<string, string | number | boolean | null> = {};
+
+  for (const [key, value] of Object.entries(input)) {
+    if (!/^[a-zA-Z][a-zA-Z0-9_]{0,40}$/.test(key)) {
+      throw new Error("Audit metadata key is invalid.");
+    }
+
+    if (
+      value === null ||
+      typeof value === "string" ||
+      typeof value === "number" ||
+      typeof value === "boolean"
+    ) {
+      metadata[key] = typeof value === "string" ? value.trim() : value;
+      continue;
+    }
+
+    if (value !== undefined) {
+      throw new Error("Audit metadata value is invalid.");
+    }
+  }
+
+  return metadata;
+};
+
+export const markHintUsed = (
+  quest: Quest,
+  progress: TeamQuestProgress,
+  usedAt: string
+): { progress: TeamQuestProgress; newlyUsed: boolean } => {
+  if (!quest.hintText?.trim()) {
+    throw new Error("Quest has no hint.");
+  }
+
+  if (quest.id !== progress.questId) {
+    throw new Error("Quest progress does not match quest.");
+  }
+
+  if (progress.hintUsedAt) {
+    return { progress, newlyUsed: false };
+  }
+
+  return {
+    progress: { ...progress, hintUsedAt: usedAt },
+    newlyUsed: true
+  };
+};
+
+export const revealManualFragment = (
+  team: Team,
+  requiredApprovalCount = REQUIRED_APPROVAL_COUNT
+): Team => ({
+  ...team,
+  mapProgressCount: Math.min(team.mapProgressCount + 1, requiredApprovalCount)
+});
+
+export const hideManualFragment = (team: Team): Team => ({
+  ...team,
+  mapProgressCount: Math.max(team.mapProgressCount - 1, 0)
+});
+
+export const skipQuest = (
+  progress: TeamQuestProgress,
+  skippedAt: string,
+  reason: string
+): TeamQuestProgress => {
+  if (!reason.trim()) {
+    throw new Error("Override reason is required.");
+  }
+
+  return {
+    ...progress,
+    status: "skipped",
+    approvedAt: null,
+    skippedAt
+  };
+};
+
+export const overrideBrokenQuest = (
+  team: Team,
+  progress: TeamQuestProgress,
+  approvedAt: string,
+  reason: string,
+  requiredApprovalCount = REQUIRED_APPROVAL_COUNT
+): {
+  team: Team;
+  progress: TeamQuestProgress;
+  newlyApproved: boolean;
+} => {
+  if (!reason.trim()) {
+    throw new Error("Override reason is required.");
+  }
+
+  const newlyApproved = progress.status !== "approved";
+
+  return {
+    team: newlyApproved
+      ? {
+          ...team,
+          completedQuestCount: Math.min(team.completedQuestCount + 1, 25),
+          mapProgressCount: Math.min(
+            team.mapProgressCount + 1,
+            requiredApprovalCount
+          )
+        }
+      : team,
+    progress: {
+      ...progress,
+      status: "approved",
+      approvedAt: progress.approvedAt ?? approvedAt,
+      skippedAt: null
+    },
+    newlyApproved
+  };
+};
+
+export const createReplacementProofDraft = (
+  input: SubmissionInput & { status?: "pending" | "approved" },
+  submittedAt: string
+): Submission => {
+  const created = createSubmissionDraft(
+    input,
+    {
+      id: `${input.teamId}-${input.questId}`,
+      teamId: input.teamId,
+      questId: input.questId,
+      status: "not_started",
+      hintUsedAt: null,
+      approvedAt: null,
+      skippedAt: null
+    },
+    submittedAt
+  ).submission;
+
+  return input.status === "approved"
+    ? {
+        ...created,
+        status: "approved",
+        reviewedAt: submittedAt
+      }
+    : created;
+};
+
+export const assertKnownAuditAction = (action: string): AuditAction => {
+  if (!isAuditAction(action)) {
+    throw new Error("Audit action is invalid.");
+  }
+
+  return action;
+};
 
 const isValidUrl = (value: string): boolean => {
   try {

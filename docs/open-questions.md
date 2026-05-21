@@ -86,6 +86,12 @@
 
 - Owner action: fill physical hiding locations in `fallback/qr-mapping.md` after QR codes are printed and placed.
 
+### Phase 5 Production Migration
+
+- Owner action: apply `supabase/migrations/202605210003_phase5_admin_tools.sql` to production before using Phase 5 features there.
+- This migration expands the allowed `audit_logs.action` values for team login, quest view, hint usage, manual overrides, skipped quests, broken quest overrides, and replacement proof entries.
+- Phase 5 manual reveal/hide uses each team's `map_progress_count` as the authoritative revealed-fragment count, while approval/rejection paths keep it synchronized with approved quest progress.
+
 ## Project Owner Actions
 
 ### Dependency Security Follow-Up

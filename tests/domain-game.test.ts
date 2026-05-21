@@ -1,13 +1,26 @@
 import { describe, expect, it } from "vitest";
 import {
   approveSubmission,
+  assertKnownAuditAction,
+  auditMetadata,
   calculateMapProgress,
   canSubmitProof,
   createAuditLog,
+  createReplacementProofDraft,
   createSubmissionDraft,
-  rejectSubmission
+  hideManualFragment,
+  markHintUsed,
+  overrideBrokenQuest,
+  rejectSubmission,
+  revealManualFragment,
+  skipQuest
 } from "@/lib/domain/game";
-import type { Submission, TeamQuestProgress } from "@/lib/domain/types";
+import type {
+  Quest,
+  Submission,
+  Team,
+  TeamQuestProgress
+} from "@/lib/domain/types";
 
 const now = "2026-05-21T10:00:00.000Z";
 const later = "2026-05-21T11:00:00.000Z";
@@ -22,6 +35,30 @@ const progress = (
   hintUsedAt: null,
   approvedAt: null,
   skippedAt: null,
+  ...overrides
+});
+
+const team = (overrides: Partial<Team> = {}): Team => ({
+  id: "team-ember",
+  name: "Druzyna Zarzewia",
+  pinHash: "hash",
+  mapProgressCount: 0,
+  completedQuestCount: 0,
+  createdAt: now,
+  ...overrides
+});
+
+const quest = (overrides: Partial<Quest> = {}): Quest => ({
+  id: "quest-01",
+  slug: "amber-vault-k9q4m2x7",
+  title: "Pieczec Bursztynu",
+  flavorText: "opis",
+  instructions: "instrukcja",
+  successCriteria: "kryterium",
+  safetyWarning: "bezpiecznie",
+  proofKind: "photo_link",
+  hintText: "Podpowiedz",
+  isActive: true,
   ...overrides
 });
 
@@ -76,6 +113,12 @@ describe("calculateMapProgress", () => {
       )
     ).toMatchObject({
       approvedQuestCount: 25,
+      revealedFragmentCount: 21,
+      isFinalUnlocked: true
+    });
+
+    expect(calculateMapProgress([], 21, 21)).toMatchObject({
+      approvedQuestCount: 0,
       revealedFragmentCount: 21,
       isFinalUnlocked: true
     });
@@ -404,5 +447,112 @@ describe("createAuditLog", () => {
       submissionId: null,
       metadata: {}
     });
+  });
+});
+
+describe("phase 5 domain helpers", () => {
+  it("normalizes audit metadata and action names", () => {
+    expect(auditMetadata({ reason: " awaria ", count: 1, ok: true, none: null })).toEqual({
+      reason: "awaria",
+      count: 1,
+      ok: true,
+      none: null
+    });
+    expect(auditMetadata({ omitted: undefined })).toEqual({});
+    expect(() => auditMetadata({ "bad-key": "x" })).toThrow(
+      "Audit metadata key is invalid."
+    );
+    expect(() => auditMetadata({ nested: { bad: true } })).toThrow(
+      "Audit metadata value is invalid."
+    );
+    expect(assertKnownAuditAction("hint_used")).toBe("hint_used");
+    expect(() => assertKnownAuditAction("missing")).toThrow(
+      "Audit action is invalid."
+    );
+  });
+
+  it("marks hints idempotently without changing quest status", () => {
+    const first = markHintUsed(quest(), progress({ status: "approved" }), later);
+    expect(first).toMatchObject({
+      newlyUsed: true,
+      progress: { status: "approved", hintUsedAt: later }
+    });
+    expect(markHintUsed(quest(), first.progress, now)).toEqual({
+      newlyUsed: false,
+      progress: first.progress
+    });
+    expect(() => markHintUsed(quest({ hintText: null }), progress(), now)).toThrow(
+      "Quest has no hint."
+    );
+    expect(() =>
+      markHintUsed(quest({ id: "quest-02" }), progress(), now)
+    ).toThrow("Quest progress does not match quest.");
+  });
+
+  it("updates manual fragment counts with bounds", () => {
+    expect(revealManualFragment(team({ mapProgressCount: 20 })).mapProgressCount).toBe(21);
+    expect(revealManualFragment(team({ mapProgressCount: 21 })).mapProgressCount).toBe(21);
+    expect(hideManualFragment(team({ mapProgressCount: 1 })).mapProgressCount).toBe(0);
+    expect(hideManualFragment(team({ mapProgressCount: 0 })).mapProgressCount).toBe(0);
+  });
+
+  it("skips and overrides broken quests with required reasons", () => {
+    expect(skipQuest(progress({ status: "pending_review", approvedAt: later }), now, " powod ")).toMatchObject({
+      status: "skipped",
+      approvedAt: null,
+      skippedAt: now
+    });
+    expect(() => skipQuest(progress(), now, " ")).toThrow(
+      "Override reason is required."
+    );
+
+    const overridden = overrideBrokenQuest(
+      team({ mapProgressCount: 20, completedQuestCount: 24 }),
+      progress({ status: "skipped" }),
+      later,
+      "awaria"
+    );
+    expect(overridden).toMatchObject({
+      newlyApproved: true,
+      team: { mapProgressCount: 21, completedQuestCount: 25 },
+      progress: { status: "approved", approvedAt: later, skippedAt: null }
+    });
+    expect(
+      overrideBrokenQuest(overridden.team, overridden.progress, now, "awaria")
+    ).toMatchObject({ newlyApproved: false, team: overridden.team });
+    expect(() =>
+      overrideBrokenQuest(team(), progress(), now, " ")
+    ).toThrow("Override reason is required.");
+  });
+
+  it("creates replacement proof drafts", () => {
+    expect(
+      createReplacementProofDraft(
+        {
+          id: "replacement-01",
+          teamId: "team-ember",
+          questId: "quest-01",
+          contributorName: "Admin",
+          proofKind: "text_response",
+          proofValue: "zastepczo",
+          status: "approved"
+        },
+        now
+      )
+    ).toMatchObject({ status: "approved", reviewedAt: now });
+    expect(
+      createReplacementProofDraft(
+        {
+          id: "replacement-02",
+          teamId: "team-ember",
+          questId: "quest-01",
+          contributorName: "Admin",
+          proofKind: "photo_link",
+          proofValue: "https://example.com/proof",
+          note: null
+        },
+        now
+      )
+    ).toMatchObject({ status: "pending", reviewedAt: null });
   });
 });

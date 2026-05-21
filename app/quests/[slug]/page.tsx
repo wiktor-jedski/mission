@@ -12,12 +12,14 @@ type QuestPageProps = {
 export default async function QuestPage({ params, searchParams }: QuestPageProps) {
   const { slug } = await params;
   const teamId = await requirePlayerTeam(`/quests/${slug}`);
-  const questAccess = await getRuntimeRepository().getQuestAccess(teamId, slug);
+  const repository = getRuntimeRepository();
+  const questAccess = await repository.getQuestAccess(teamId, slug);
 
   if (questAccess.status === "not_found") {
     return <UnknownQuestView />;
   }
 
+  await repository.recordQuestView(teamId, questAccess.quest.id);
   const query = await searchParams;
   const error = query?.error === "invalid" ? "Sprawdz dane i sprobuj ponownie." : undefined;
 

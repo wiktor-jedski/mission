@@ -1,4 +1,5 @@
 import type {
+  AuditLog,
   MapProgressSnapshot,
   Quest,
   Submission,
@@ -41,10 +42,43 @@ export type AdminReviewActionResult =
   | { status: "not_found" }
   | { status: "invalid_transition" };
 
+export type AdminOverrideResult =
+  | { status: "updated" }
+  | { status: "not_found" }
+  | { status: "invalid_input"; error: string };
+
 export type RejectSubmissionInput = {
   submissionId: string;
   reason: string;
   message: string | null;
+};
+
+export type HintUsageResult =
+  | { status: "updated"; progress: TeamQuestProgress }
+  | { status: "not_found" }
+  | { status: "no_hint" };
+
+export type AuditLogEntry = {
+  audit: AuditLog;
+  team: Team | null;
+  quest: Quest | null;
+  submission: Submission | null;
+};
+
+export type OverrideInput = {
+  teamId: string;
+  questId?: string;
+  reason?: string;
+};
+
+export type ReplacementProofInput = {
+  teamId: string;
+  questId: string;
+  contributorName: string;
+  proofKind: string;
+  proofValue: string;
+  note: string | null;
+  status: "pending" | "approved";
 };
 
 export type RuntimeRepository = {
@@ -53,9 +87,13 @@ export type RuntimeRepository = {
   getQuests(): Promise<readonly Quest[]>;
   getQuestBySlug(slug: string): Promise<Quest | null>;
   getQuestAccess(teamId: string, slug: string): Promise<QuestAccessResult>;
+  recordTeamLogin(teamId: string): Promise<void>;
+  recordQuestView(teamId: string, questId: string): Promise<void>;
   getTeamSubmissions(teamId: string): Promise<readonly Submission[]>;
   submitProof(input: SubmitProofInput): Promise<SubmitProofResult>;
+  useHint(teamId: string, questSlug: string): Promise<HintUsageResult>;
   getTeamMapState(teamId: string): Promise<MapProgressSnapshot>;
+  listAuditLogs(limit?: number): Promise<readonly AuditLogEntry[]>;
   listPendingSubmissions(): Promise<readonly PendingSubmissionReview[]>;
   getPendingSubmission(
     submissionId: string
@@ -64,4 +102,9 @@ export type RuntimeRepository = {
   rejectSubmission(
     input: RejectSubmissionInput
   ): Promise<AdminReviewActionResult>;
+  revealManualFragment(input: OverrideInput): Promise<AdminOverrideResult>;
+  hideManualFragment(input: OverrideInput): Promise<AdminOverrideResult>;
+  skipQuest(input: Required<OverrideInput>): Promise<AdminOverrideResult>;
+  overrideBrokenQuest(input: Required<OverrideInput>): Promise<AdminOverrideResult>;
+  enterReplacementProof(input: ReplacementProofInput): Promise<AdminOverrideResult>;
 };

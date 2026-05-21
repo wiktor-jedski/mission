@@ -26,6 +26,7 @@ export async function POST(request: Request) {
     );
   }
 
+  await repository.recordTeamLogin(verification.teamId);
   const session = createTeamSession(verification.teamId, Date.now());
   const response = NextResponse.redirect(new URL(nextPath, request.url));
   response.cookies.set(TEAM_SESSION_COOKIE, serializeTeamSession(session), {

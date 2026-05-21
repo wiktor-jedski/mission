@@ -1,58 +1,139 @@
 import Link from "next/link";
+import { AdminPendingPoller } from "./AdminPendingPoller";
 import type { PendingSubmissionReview } from "@/lib/runtime/repository";
+import type { Quest, Team } from "@/lib/domain/types";
 
 type AdminReviewListProps = {
   reviews: readonly PendingSubmissionReview[];
+  teams?: readonly Team[];
+  quests?: readonly Quest[];
   error?: string;
 };
 
-export function AdminReviewList({ reviews, error }: AdminReviewListProps) {
+export function AdminReviewList({
+  reviews,
+  teams = [],
+  quests = [],
+  error
+}: AdminReviewListProps) {
   return (
     <main className="page-shell">
       <nav className="inline-nav" aria-label="Nawigacja admina">
+        <Link href="/admin">Zgloszenia</Link>
+        <Link href="/admin/audit">Audyt</Link>
         <a href="/admin/logout">Wyloguj</a>
       </nav>
       <h1>Zgloszenia do sprawdzenia</h1>
       {error ? <p role="alert">{error}</p> : null}
-      {reviews.length === 0 ? (
-        <p>Brak zgloszen oczekujacych.</p>
-      ) : (
-        <ul className="status-list">
-          {reviews.map((review) => (
-            <li key={review.submission.id}>
-              <AdminReviewItem review={review} />
-            </li>
-          ))}
-        </ul>
-      )}
+      <AdminOverrideForms teams={teams} quests={quests} />
+      <AdminPendingPoller initialReviews={reviews} />
     </main>
   );
 }
 
-export function AdminReviewItem({
-  review
+export function AdminOverrideForms({
+  teams,
+  quests
 }: {
-  review: PendingSubmissionReview;
+  teams: readonly Team[];
+  quests: readonly Quest[];
 }) {
+  if (teams.length === 0 || quests.length === 0) {
+    return null;
+  }
+
   return (
-    <article className="review-item">
-      <h2>{review.quest.title}</h2>
-      <p>
-        {review.team.name} | {review.submission.contributorName}
-      </p>
-      <p>{new Date(review.submission.submittedAt).toLocaleString("pl-PL")}</p>
-      {review.submission.note ? <p>{review.submission.note}</p> : null}
-      <p>
-        Postep mapy: {review.map.revealedFragmentCount}/
-        {review.map.requiredApprovalCount}
-      </p>
-      <ProofValue
-        proofKind={review.submission.proofKind}
-        proofValue={review.submission.proofValue}
-      />
-      <Link href={`/admin/submissions/${review.submission.id}`}>Szczegoly</Link>
-      <ReviewActionForms submissionId={review.submission.id} />
-    </article>
+    <section aria-labelledby="override-heading">
+      <h2 id="override-heading">Narzedzia admina</h2>
+      <form action="/admin/overrides" method="post" className="stacked-form">
+        <input type="hidden" name="action" value="reveal" />
+        <TeamSelect teams={teams} id="reveal-team" />
+        <button type="submit">Odkryj fragment</button>
+      </form>
+      <form action="/admin/overrides" method="post" className="stacked-form">
+        <input type="hidden" name="action" value="hide" />
+        <TeamSelect teams={teams} id="hide-team" />
+        <ReasonInput id="hide-reason" />
+        <button type="submit">Ukryj fragment</button>
+      </form>
+      <form action="/admin/overrides" method="post" className="stacked-form">
+        <input type="hidden" name="action" value="skip" />
+        <TeamSelect teams={teams} id="skip-team" />
+        <QuestSelect quests={quests} id="skip-quest" />
+        <ReasonInput id="skip-reason" />
+        <button type="submit">Pomin misje</button>
+      </form>
+      <form action="/admin/overrides" method="post" className="stacked-form">
+        <input type="hidden" name="action" value="override" />
+        <TeamSelect teams={teams} id="override-team" />
+        <QuestSelect quests={quests} id="override-quest" />
+        <ReasonInput id="override-reason" />
+        <button type="submit">Zalicz awarie misji</button>
+      </form>
+      <form action="/admin/overrides" method="post" className="stacked-form">
+        <input type="hidden" name="action" value="replacement" />
+        <TeamSelect teams={teams} id="replacement-team" />
+        <QuestSelect quests={quests} id="replacement-quest" />
+        <label htmlFor="replacement-contributor">Autor dowodu</label>
+        <input id="replacement-contributor" name="contributorName" required />
+        <label htmlFor="replacement-kind">Typ dowodu</label>
+        <select id="replacement-kind" name="proofKind" required>
+          <option value="photo_link">Link do zdjecia</option>
+          <option value="video_link">Link do filmu</option>
+          <option value="audio_link">Link do audio</option>
+          <option value="text_response">Odpowiedz tekstowa</option>
+        </select>
+        <label htmlFor="replacement-proof">Dowod</label>
+        <textarea id="replacement-proof" name="proofValue" required />
+        <label htmlFor="replacement-note">Notatka</label>
+        <textarea id="replacement-note" name="note" maxLength={500} />
+        <label htmlFor="replacement-status">Status</label>
+        <select id="replacement-status" name="status" required>
+          <option value="pending">Do sprawdzenia</option>
+          <option value="approved">Zaakceptowany</option>
+        </select>
+        <button type="submit">Dodaj dowod zastepczy</button>
+      </form>
+    </section>
+  );
+}
+
+function TeamSelect({ teams, id }: { teams: readonly Team[]; id: string }) {
+  return (
+    <>
+      <label htmlFor={id}>Druzyna</label>
+      <select id={id} name="teamId" required>
+        {teams.map((team) => (
+          <option key={team.id} value={team.id}>
+            {team.name}
+          </option>
+        ))}
+      </select>
+    </>
+  );
+}
+
+function QuestSelect({ quests, id }: { quests: readonly Quest[]; id: string }) {
+  return (
+    <>
+      <label htmlFor={id}>Misja</label>
+      <select id={id} name="questId" required>
+        {quests.map((quest) => (
+          <option key={quest.id} value={quest.id}>
+            {quest.title}
+          </option>
+        ))}
+      </select>
+    </>
+  );
+}
+
+function ReasonInput({ id }: { id: string }) {
+  return (
+    <>
+      <label htmlFor={id}>Powod</label>
+      <textarea id={id} name="reason" required maxLength={300} />
+    </>
   );
 }
 

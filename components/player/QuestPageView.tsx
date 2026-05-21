@@ -28,6 +28,16 @@ export function QuestPageView({ quest, error }: QuestPageViewProps) {
         <h2 id="safety-heading">Bezpieczenstwo</h2>
         <p>{quest.safetyWarning}</p>
       </section>
+      <section aria-labelledby="hint-heading">
+        <h2 id="hint-heading">Podpowiedz</h2>
+        {quest.hintUsed && quest.hintText ? (
+          <p>{quest.hintText}</p>
+        ) : (
+          <form action={`/quests/${quest.slug}/hint`} method="post">
+            <button type="submit">Pokaz podpowiedz</button>
+          </form>
+        )}
+      </section>
       <p role="status">{quest.statusMessage}</p>
       {quest.latestRejectionMessage ? (
         <p role="alert">{quest.latestRejectionMessage}</p>

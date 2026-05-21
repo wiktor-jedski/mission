@@ -1,8 +1,14 @@
-import { render, screen } from "@testing-library/react";
+import { act, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import Home from "@/app/page";
 import { AdminLoginForm } from "@/components/admin/AdminLoginForm";
+import { AdminAuditLog } from "@/components/admin/AdminAuditLog";
 import {
+  AdminPendingPoller,
+  PENDING_POLL_INTERVAL_MS
+} from "@/components/admin/AdminPendingPoller";
+import {
+  AdminOverrideForms,
   AdminReviewList,
   ProofValue,
   ReviewActionForms
@@ -14,7 +20,8 @@ import { QuestPageView } from "@/components/player/QuestPageView";
 import { SubmissionsView } from "@/components/player/SubmissionsView";
 import { UnknownQuestView } from "@/components/player/UnknownQuestView";
 import { createTeamSession, serializeTeamSession } from "@/lib/player/session";
-import type { PendingSubmissionReview } from "@/lib/runtime/repository";
+import type { AuditLogEntry, PendingSubmissionReview } from "@/lib/runtime/repository";
+import type { Quest, Team } from "@/lib/domain/types";
 import type { QuestViewModel, SubmissionStatusView } from "@/lib/player/view-models";
 
 const cookieValue = vi.hoisted(() => ({ current: undefined as string | undefined }));
@@ -90,6 +97,18 @@ describe("player components", () => {
     expect(screen.getByLabelText("Link do zdjecia")).toBeRequired();
     expect(screen.getByRole("alert")).toHaveTextContent("Sprawdz dane");
     expect(screen.getByRole("button", { name: "Wyslij dowod" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Pokaz podpowiedz" })).toBeInTheDocument();
+  });
+
+  it("renders used quest hints", () => {
+    render(
+      <QuestPageView
+        quest={questView({ hintUsed: true, hintText: "Szukaj przy kominku." })}
+      />
+    );
+
+    expect(screen.getByText("Szukaj przy kominku.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Pokaz podpowiedz" })).not.toBeInTheDocument();
   });
 
   it("renders blocked and rejected quest states", () => {
@@ -218,6 +237,157 @@ describe("phase 3 components", () => {
     );
   });
 
+  it("renders admin override controls", () => {
+    render(<AdminOverrideForms teams={[team()]} quests={[quest()]} />);
+
+    expect(screen.getByRole("heading", { name: "Narzedzia admina" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Odkryj fragment" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Ukryj fragment" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Pomin misje" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Zalicz awarie misji" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Dodaj dowod zastepczy" })).toBeInTheDocument();
+
+    const { container } = render(<AdminOverrideForms teams={[]} quests={[quest()]} />);
+    expect(container).toBeEmptyDOMElement();
+  });
+
+  it("renders admin audit log states", () => {
+    const { rerender } = render(<AdminAuditLog entries={[]} />);
+    expect(screen.getByText("Brak zdarzen audytu.")).toBeInTheDocument();
+
+    rerender(
+      <AdminAuditLog
+        entries={[
+          auditEntry("team_login", {}),
+          auditEntry("quest_viewed", { repeated: false }),
+          auditEntry("submission_created", {}),
+          auditEntry("hint_used", {}),
+          auditEntry("submission_approved", {}),
+          auditEntry("submission_rejected", {}),
+          auditEntry("manual_fragment_revealed", {}),
+          auditEntry("manual_fragment_hidden", {}),
+          auditEntry("quest_skipped", {}),
+          auditEntry("broken_quest_overridden", {}),
+          auditEntry("replacement_proof_entered", {}),
+          auditEntry("unknown_action", { reason: "test" }),
+          {
+            ...auditEntry("team_login_missing_context", {}),
+            audit: {
+              ...auditEntry("team_login_missing_context", {}).audit,
+              action: "team_login" as AuditLogEntry["audit"]["action"]
+            },
+            team: null,
+            quest: null,
+            submission: null
+          }
+        ]}
+      />
+    );
+    expect(screen.getAllByText("Logowanie druzyny")).toHaveLength(2);
+    expect(screen.getByText("unknown_action")).toBeInTheDocument();
+    expect(screen.getByText("Metadane: reason: test")).toBeInTheDocument();
+  });
+
+  it("polls pending submissions and keeps stale data on errors", async () => {
+    vi.useFakeTimers();
+    const fetchMock = vi.fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ reviews: [pendingReview({ id: "submission-02" })] })
+      })
+      .mockResolvedValueOnce({ ok: false });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <AdminPendingPoller
+        initialReviews={[]}
+      />
+    );
+
+    expect(screen.getByText("Brak zgloszen oczekujacych.")).toBeInTheDocument();
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(PENDING_POLL_INTERVAL_MS);
+    });
+    expect(screen.getByRole("link", { name: "Szczegoly" })).toHaveAttribute(
+      "href",
+      "/admin/submissions/submission-02"
+    );
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(PENDING_POLL_INTERVAL_MS);
+    });
+    expect(screen.getByRole("alert")).toHaveTextContent("ostatnie dane");
+    expect(screen.getByRole("link", { name: "Szczegoly" })).toHaveAttribute(
+      "href",
+      "/admin/submissions/submission-02"
+    );
+
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+  });
+
+  it("shows a refreshing polling state while requests are pending", async () => {
+    vi.useFakeTimers();
+    let resolveJson: (value: { reviews: readonly PendingSubmissionReview[] }) => void = () => {};
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: () =>
+          new Promise((resolve) => {
+            resolveJson = resolve;
+          })
+      })
+    );
+
+    render(
+      <AdminPendingPoller
+        initialReviews={[]}
+      />
+    );
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(PENDING_POLL_INTERVAL_MS);
+    });
+    expect(screen.getByRole("status")).toHaveTextContent("Odswiezam");
+    await act(async () => {
+      resolveJson({ reviews: [] });
+    });
+
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+  });
+
+  it("renders polled text and invalid link proof values as text", () => {
+    const { rerender } = render(
+      <AdminPendingPoller
+        initialReviews={[
+          pendingReview({ proofKind: "photo_link", proofValue: "nie-url" })
+        ]}
+      />
+    );
+    expect(screen.getByText("Dowod: nie-url")).toBeInTheDocument();
+
+    rerender(
+      <AdminPendingPoller
+        initialReviews={[
+          pendingReview({ proofKind: "text_response", proofValue: "odpowiedz" })
+        ]}
+      />
+    );
+    expect(screen.getByText("Dowod: odpowiedz")).toBeInTheDocument();
+
+    rerender(
+      <AdminPendingPoller
+        initialReviews={[
+          pendingReview({ proofKind: "photo_link", proofValue: "http://example.com/proof" })
+        ]}
+      />
+    );
+    expect(screen.getByRole("link", { name: "Otworz link" })).toHaveAttribute(
+      "href",
+      "http://example.com/proof"
+    );
+  });
+
   it("renders locked and unlocked map states", () => {
     const { rerender } = render(
       <MapView
@@ -256,10 +426,36 @@ const questView = (overrides: Partial<QuestViewModel> = {}): QuestViewModel => (
   instructions: "Wykonaj misje.",
   successCriteria: "Pokaz wynik.",
   safetyWarning: "Bez szkody.",
+  hintText: null,
+  hintUsed: false,
   proofLabel: "Link do zdjecia",
   statusMessage: "Misja gotowa do wykonania.",
   canSubmit: true,
   latestRejectionMessage: null,
+  ...overrides
+});
+
+const team = (overrides: Partial<Team> = {}): Team => ({
+  id: "team-ember",
+  name: "Druzyna Zarzewia",
+  pinHash: "hash",
+  mapProgressCount: 0,
+  completedQuestCount: 0,
+  createdAt: "2026-05-21T09:00:00.000Z",
+  ...overrides
+});
+
+const quest = (overrides: Partial<Quest> = {}): Quest => ({
+  id: "quest-01",
+  slug: "amber-vault-k9q4m2x7",
+  title: "Pieczec Bursztynu",
+  flavorText: "Krotki opis.",
+  instructions: "Wykonaj misje.",
+  successCriteria: "Pokaz wynik.",
+  safetyWarning: "Bez szkody.",
+  proofKind: "photo_link",
+  hintText: "Podpowiedz",
+  isActive: true,
   ...overrides
 });
 
@@ -293,22 +489,10 @@ const pendingReview = (
     ...submissionOverrides
   },
   team: {
-    id: "team-ember",
-    name: "Druzyna Zarzewia",
-    pinHash: "hash",
-    createdAt: "2026-05-21T09:00:00.000Z"
+    ...team()
   },
   quest: {
-    id: "quest-01",
-    slug: "amber-vault-k9q4m2x7",
-    title: "Pieczec Bursztynu",
-    flavorText: "Krotki opis.",
-    instructions: "Wykonaj misje.",
-    successCriteria: "Pokaz wynik.",
-    safetyWarning: "Bez szkody.",
-    proofKind: "photo_link",
-    hintText: null,
-    isActive: true
+    ...quest({ hintText: null })
   },
   progress: {
     id: "team-ember-quest-01",
@@ -325,4 +509,24 @@ const pendingReview = (
     requiredApprovalCount: 21,
     isFinalUnlocked: false
   }
+});
+
+const auditEntry = (
+  action: string,
+  metadata: Record<string, unknown>
+): AuditLogEntry => ({
+  audit: {
+    id: `audit-${action}`,
+    actorType: "admin",
+    actorId: null,
+    action: action as AuditLogEntry["audit"]["action"],
+    teamId: "team-ember",
+    questId: "quest-01",
+    submissionId: "submission-01",
+    metadata,
+    createdAt: "2026-05-21T10:00:00.000Z"
+  },
+  team: team(),
+  quest: quest(),
+  submission: pendingReview().submission
 });

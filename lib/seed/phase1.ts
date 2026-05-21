@@ -10,12 +10,16 @@ export const phase1Teams: readonly Team[] = [
     id: "team-ember",
     name: "Druzyna Zarzewia",
     pinHash: "phase1-placeholder-pin-hash-ember",
+    mapProgressCount: 0,
+    completedQuestCount: 0,
     createdAt: "2026-05-21T00:00:00.000Z"
   },
   {
     id: "team-iron",
     name: "Druzyna Zelaza",
     pinHash: "phase1-placeholder-pin-hash-iron",
+    mapProgressCount: 0,
+    completedQuestCount: 0,
     createdAt: "2026-05-21T00:00:00.000Z"
   }
 ];

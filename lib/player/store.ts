@@ -41,7 +41,7 @@ export type PlayerRepositorySnapshot = {
 };
 
 export class PlayerRepository {
-  private readonly teams: Team[];
+  private teams: Team[];
   private readonly quests: Quest[];
   private progressRows: TeamQuestProgress[];
   private submissions: Submission[];
@@ -210,6 +210,25 @@ export class PlayerRepository {
       progressRows: this.progressRows,
       submissions: this.submissions
     };
+  }
+
+  replaceTeam(team: Team): void {
+    this.teams = this.teams.map((row) => (row.id === team.id ? team : row));
+  }
+
+  replaceProgress(progress: TeamQuestProgress): void {
+    this.progressRows = this.progressRows.map((row) =>
+      row.id === progress.id ? progress : row
+    );
+  }
+
+  addSubmission(submission: Submission): void {
+    this.submissions = [...this.submissions, submission];
+    this.nextSubmissionNumber = this.submissions.length + 1;
+  }
+
+  createReplacementSubmissionId(): string {
+    return this.createSubmissionId();
   }
 
   private getOrCreateProgress(teamId: string, questId: string): TeamQuestProgress {

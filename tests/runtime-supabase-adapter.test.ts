@@ -220,6 +220,148 @@ describe("SupabaseRuntimeRepository", () => {
       status: "not_found"
     });
   });
+
+  it("runs phase 5 audit, hint, and override paths through Supabase tables", async () => {
+    const fake = new FakeSupabase();
+    const repository = new SupabaseRuntimeRepository(fake.client());
+
+    await repository.recordTeamLogin("team-ember");
+    await repository.recordTeamLogin("missing");
+    await repository.recordQuestView("team-ember", "quest-01");
+    await repository.recordQuestView("missing", "quest-01");
+    await repository.recordQuestView("team-ember", "missing");
+
+    await expect(
+      repository.useHint("team-ember", "amber-vault-k9q4m2x7")
+    ).resolves.toMatchObject({ status: "updated" });
+    fake.clearHint("quest-02");
+    await expect(
+      repository.useHint("team-ember", "silent-forge-p6t8n3v1")
+    ).resolves.toEqual({ status: "no_hint" });
+    await expect(repository.useHint("missing", "amber-vault-k9q4m2x7")).resolves.toEqual({
+      status: "not_found"
+    });
+
+    await expect(repository.revealManualFragment({ teamId: "team-ember" })).resolves.toEqual({
+      status: "updated"
+    });
+    await expect(repository.hideManualFragment({ teamId: "team-ember", reason: "test" })).resolves.toEqual({
+      status: "updated"
+    });
+    await expect(repository.hideManualFragment({ teamId: "missing" })).resolves.toEqual({
+      status: "not_found"
+    });
+    await expect(
+      repository.skipQuest({ teamId: "team-ember", questId: "quest-02", reason: "awaria" })
+    ).resolves.toEqual({ status: "updated" });
+    await expect(
+      repository.overrideBrokenQuest({
+        teamId: "team-ember",
+        questId: "quest-01",
+        reason: "awaria"
+      })
+    ).resolves.toEqual({ status: "updated" });
+    await expect(
+      repository.enterReplacementProof({
+        teamId: "team-iron",
+        questId: "quest-01",
+        contributorName: "Admin",
+        proofKind: "photo_link",
+        proofValue: "https://example.com/replacement",
+        note: null,
+        status: "pending"
+      })
+    ).resolves.toEqual({ status: "updated" });
+    fake.insert("audit_logs", {
+      id: "audit-null-context",
+      actor_type: "system",
+      actor_id: null,
+      action: "schema_maintenance",
+      team_id: null,
+      quest_id: null,
+      submission_id: null,
+      metadata: {},
+      created_at: "2026-05-21T12:00:00.000Z"
+    });
+
+    const audits = await repository.listAuditLogs(100);
+    expect(audits.length).toBeGreaterThanOrEqual(4);
+    expect(audits[0].audit.action).toBe("replacement_proof_entered");
+    expect(
+      audits.find((entry) => entry.audit.id === "audit-null-context")
+    ).toMatchObject({
+      team: null,
+      quest: null,
+      submission: null
+    });
+
+    await expect(repository.revealManualFragment({ teamId: "missing" })).resolves.toEqual({
+      status: "not_found"
+    });
+    await expect(
+      repository.skipQuest({ teamId: "team-ember", questId: "quest-01", reason: "" })
+    ).resolves.toMatchObject({ status: "invalid_input" });
+    await expect(
+      repository.skipQuest({ teamId: "team-ember", questId: "missing", reason: "awaria" })
+    ).resolves.toEqual({ status: "not_found" });
+    await expect(
+      repository.overrideBrokenQuest({
+        teamId: "team-ember",
+        questId: "quest-01",
+        reason: ""
+      })
+    ).resolves.toMatchObject({ status: "invalid_input" });
+    await expect(
+      repository.overrideBrokenQuest({
+        teamId: "team-ember",
+        questId: "missing",
+        reason: "awaria"
+      })
+    ).resolves.toEqual({ status: "not_found" });
+    await expect(
+      repository.enterReplacementProof({
+        teamId: "team-ember",
+        questId: "missing",
+        contributorName: "Admin",
+        proofKind: "photo_link",
+        proofValue: "https://example.com/replacement",
+        note: null,
+        status: "pending"
+      })
+    ).resolves.toEqual({ status: "not_found" });
+    await expect(
+      repository.enterReplacementProof({
+        teamId: "team-ember",
+        questId: "quest-01",
+        contributorName: "",
+        proofKind: "photo_link",
+        proofValue: "https://example.com/replacement",
+        note: null,
+        status: "pending"
+      })
+    ).resolves.toMatchObject({ status: "invalid_input" });
+  });
+
+  it("handles team rows disappearing during Supabase count sync", async () => {
+    const fake = new FakeSupabase();
+    const repository = new SupabaseRuntimeRepository(fake.client());
+    const created = await repository.submitProof({
+      teamId: "team-ember",
+      questSlug: "amber-vault-k9q4m2x7",
+      contributorName: "Ala",
+      proofValue: "https://example.com/proof",
+      note: null
+    });
+
+    if (created.status !== "created") {
+      throw new Error("Expected created submission.");
+    }
+
+    fake.clearOnRpc("teams");
+    await expect(repository.approveSubmission(created.submission.id)).resolves.toEqual({
+      status: "not_found"
+    });
+  });
 });
 
 type TableName =
@@ -301,6 +443,12 @@ class FakeSupabase {
   removeProgress(teamId: string, questId: string): void {
     this.tables.team_quest_progress = this.tables.team_quest_progress.filter(
       (row) => row.team_id !== teamId || row.quest_id !== questId
+    );
+  }
+
+  clearHint(questId: string): void {
+    this.tables.quests = this.tables.quests.map((row) =>
+      row.id === questId ? { ...row, hint_text: null } : row
     );
   }
 
@@ -513,7 +661,7 @@ const questRow = (id: string, slug: string, proofKind: string): Row => ({
   success_criteria: "kryterium",
   safety_warning: "bezpiecznie",
   proof_kind: proofKind,
-  hint_text: null,
+  hint_text: "podpowiedz",
   is_active: true,
   created_at: "2026-05-21T09:00:00.000Z"
 });

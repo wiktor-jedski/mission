@@ -277,4 +277,158 @@ describe("LocalRuntimeRepository", () => {
       })
     ).resolves.toEqual({ status: "invalid_transition" });
   });
+
+  it("records login, quest views, hints, audit entries, and overrides", async () => {
+    const repository = new LocalRuntimeRepository();
+    await repository.recordTeamLogin("team-ember");
+    await repository.recordTeamLogin("missing");
+    await repository.recordQuestView("team-ember", "quest-01");
+    await repository.recordQuestView("missing", "quest-01");
+    await repository.recordQuestView("team-ember", "missing");
+
+    await expect(repository.useHint("missing", firstSlug)).resolves.toEqual({
+      status: "not_found"
+    });
+    await expect(repository.useHint("team-ember", firstSlug)).resolves.toMatchObject({
+      status: "updated",
+      progress: { hintUsedAt: expect.any(String) }
+    });
+    await expect(repository.useHint("team-ember", firstSlug)).resolves.toMatchObject({
+      status: "updated"
+    });
+    await expect(
+      repository.useHint("team-ember", "moonlit-riddle-x2c7b9h5")
+    ).resolves.toMatchObject({ status: "updated" });
+
+    await expect(repository.revealManualFragment({ teamId: "team-ember" })).resolves.toEqual({
+      status: "updated"
+    });
+    await expect(repository.hideManualFragment({ teamId: "team-ember", reason: "test" })).resolves.toEqual({
+      status: "updated"
+    });
+    await expect(
+      repository.skipQuest({ teamId: "team-ember", questId: "quest-02", reason: "awaria" })
+    ).resolves.toEqual({ status: "updated" });
+    await expect(
+      repository.overrideBrokenQuest({
+        teamId: "team-ember",
+        questId: "quest-03",
+        reason: "awaria"
+      })
+    ).resolves.toEqual({ status: "updated" });
+    await expect(
+      repository.enterReplacementProof({
+        teamId: "team-ember",
+        questId: "quest-04",
+        contributorName: "Admin",
+        proofKind: "photo_link",
+        proofValue: "https://example.com/replacement",
+        note: null,
+        status: "pending"
+      })
+    ).resolves.toEqual({ status: "updated" });
+
+    const audits = await repository.listAuditLogs(5);
+    expect(audits).toHaveLength(5);
+    expect(audits[0]).toMatchObject({
+      audit: { action: "replacement_proof_entered" },
+      team: { id: "team-ember" },
+      quest: { id: "quest-04" },
+      submission: { contributorName: "Admin" }
+    });
+  });
+
+  it("returns safe override failures", async () => {
+    const repository = new LocalRuntimeRepository();
+    await expect(repository.revealManualFragment({ teamId: "missing" })).resolves.toEqual({
+      status: "not_found"
+    });
+    await expect(repository.hideManualFragment({ teamId: "missing" })).resolves.toEqual({
+      status: "not_found"
+    });
+    await expect(
+      repository.skipQuest({ teamId: "team-ember", questId: "missing", reason: "awaria" })
+    ).resolves.toEqual({ status: "not_found" });
+    await expect(
+      repository.overrideBrokenQuest({
+        teamId: "team-ember",
+        questId: "missing",
+        reason: "awaria"
+      })
+    ).resolves.toEqual({ status: "not_found" });
+    await expect(
+      repository.enterReplacementProof({
+        teamId: "team-ember",
+        questId: "missing",
+        contributorName: "Admin",
+        proofKind: "photo_link",
+        proofValue: "https://example.com/replacement",
+        note: null,
+        status: "pending"
+      })
+    ).resolves.toEqual({ status: "not_found" });
+    await expect(
+      repository.skipQuest({ teamId: "team-ember", questId: "quest-01", reason: " " })
+    ).resolves.toMatchObject({ status: "invalid_input" });
+    await expect(
+      repository.overrideBrokenQuest({
+        teamId: "team-ember",
+        questId: "quest-01",
+        reason: " "
+      })
+    ).resolves.toMatchObject({ status: "invalid_input" });
+    await expect(
+      repository.enterReplacementProof({
+        teamId: "team-ember",
+        questId: "quest-01",
+        contributorName: "",
+        proofKind: "photo_link",
+        proofValue: "https://example.com/replacement",
+        note: null,
+        status: "pending"
+      })
+    ).resolves.toMatchObject({ status: "invalid_input" });
+  });
+
+  it("handles phase 5 missing hint and missing audit context branches", async () => {
+    const snapshot = createInitialSnapshot();
+    const repository = new LocalRuntimeRepository({
+      ...snapshot,
+      quests: snapshot.quests.map((quest) =>
+        quest.slug === firstSlug ? { ...quest, hintText: null } : quest
+      ),
+      auditLogs: [
+        {
+          id: "audit-01",
+          actorType: "system",
+          actorId: null,
+          action: "schema_maintenance",
+          teamId: null,
+          questId: null,
+          submissionId: null,
+          metadata: {},
+          createdAt: "2026-05-21T10:00:00.000Z"
+        },
+        {
+          id: "audit-02",
+          actorType: "admin",
+          actorId: null,
+          action: "admin_override",
+          teamId: "missing",
+          questId: "missing",
+          submissionId: "missing",
+          metadata: {},
+          createdAt: "2026-05-21T11:00:00.000Z"
+        }
+      ]
+    });
+
+    await expect(repository.useHint("team-ember", firstSlug)).resolves.toEqual({
+      status: "no_hint"
+    });
+    await expect(repository.listAuditLogs()).resolves.toMatchObject([
+      { team: null, quest: null, submission: null },
+      { team: null, quest: null, submission: null }
+    ]);
+  });
 });

@@ -72,3 +72,39 @@ test("invalid PIN and unknown quest stay safe; rejected quest can resubmit", asy
   await page.getByRole("button", { name: "Wyslij dowod" }).click();
   await expect(page.getByRole("status")).toContainText("Dowod czeka");
 });
+
+test("phase 5 hint, audit, override, replacement proof, and polling smoke", async ({
+  page
+}) => {
+  await page.goto("/login");
+  await page.getByLabel("PIN druzyny").fill("2222");
+  await page.getByRole("button", { name: "Wejdz" }).click();
+  await page.goto("/quests/silent-forge-p6t8n3v1");
+  await page.getByRole("button", { name: "Pokaz podpowiedz" }).click();
+  await expect(page.getByText("Podpowiedz do misji 2.")).toBeVisible();
+
+  await page.goto("/admin");
+  await page.getByLabel("Haslo admina").fill("admin-password");
+  await page.getByRole("button", { name: "Zaloguj" }).click();
+  await expect(page.getByRole("heading", { name: "Zgloszenia do sprawdzenia" })).toBeVisible();
+  await page.getByRole("button", { name: "Odkryj fragment" }).click();
+  await expect(page.getByRole("heading", { name: "Zgloszenia do sprawdzenia" })).toBeVisible();
+  await page.getByLabel("Autor dowodu").fill("Admin");
+  await page.getByLabel("Dowod", { exact: true }).fill("https://example.com/replacement");
+  await page.getByRole("button", { name: "Dodaj dowod zastepczy" }).click();
+  await expect(page.getByRole("heading", { name: "Zgloszenia do sprawdzenia" })).toBeVisible();
+
+  await page.goto("/admin/audit");
+  await expect(page.getByRole("heading", { name: "Dziennik audytu" })).toBeVisible();
+  await expect(page.getByText("Uzycie podpowiedzi")).toBeVisible();
+  await expect(page.getByText("Reczne odkrycie fragmentu")).toBeVisible();
+  await expect(page.getByText("Dowod zastepczy")).toBeVisible();
+
+  await page.goto("/quests/silent-forge-p6t8n3v1");
+  await page.getByLabel("Kto dodaje dowod").fill("Ewa");
+  await page.getByLabel("Link do filmu").fill("https://example.com/video");
+  await page.getByRole("button", { name: "Wyslij dowod" }).click();
+
+  await page.goto("/admin");
+  await expect(page.getByRole("heading", { name: "Cicha Kuznia" })).toBeVisible();
+});
