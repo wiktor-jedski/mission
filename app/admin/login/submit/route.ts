@@ -1,5 +1,4 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { NextResponse } from "next/server";
 import { verifyAdminPassword } from "@/lib/admin/password";
 import {
   adminCookieOptions,
@@ -16,21 +15,25 @@ export async function POST(request: Request) {
   const verification = verifyAdminPassword(password);
 
   if (verification.status === "missing_configuration") {
-    redirect(`/admin/login?error=config&next=${encodeURIComponent(nextPath)}`);
+    return NextResponse.redirect(
+      new URL(`/admin/login?error=config&next=${encodeURIComponent(nextPath)}`, request.url)
+    );
   }
 
   if (verification.status === "invalid") {
-    redirect(`/admin/login?error=invalid&next=${encodeURIComponent(nextPath)}`);
+    return NextResponse.redirect(
+      new URL(`/admin/login?error=invalid&next=${encodeURIComponent(nextPath)}`, request.url)
+    );
   }
 
-  const cookieStore = await cookies();
-  cookieStore.set(
+  const response = NextResponse.redirect(new URL(nextPath, request.url));
+  response.cookies.set(
     ADMIN_SESSION_COOKIE,
     serializeAdminSession(createAdminSession(Date.now())),
     adminCookieOptions()
   );
 
-  redirect(nextPath);
+  return response;
 }
 
 const stringValue = (value: FormDataEntryValue | null): string =>

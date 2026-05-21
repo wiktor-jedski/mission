@@ -1,5 +1,4 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { NextResponse } from "next/server";
 import { getConfiguredTeamPins, verifyTeamPin } from "@/lib/player/pins";
 import {
   createTeamSession,
@@ -22,12 +21,14 @@ export async function POST(request: Request) {
   );
 
   if (verification.status === "invalid") {
-    redirect(`/login?error=invalid&next=${encodeURIComponent(nextPath)}`);
+    return NextResponse.redirect(
+      new URL(`/login?error=invalid&next=${encodeURIComponent(nextPath)}`, request.url)
+    );
   }
 
   const session = createTeamSession(verification.teamId, Date.now());
-  const cookieStore = await cookies();
-  cookieStore.set(TEAM_SESSION_COOKIE, serializeTeamSession(session), {
+  const response = NextResponse.redirect(new URL(nextPath, request.url));
+  response.cookies.set(TEAM_SESSION_COOKIE, serializeTeamSession(session), {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
@@ -35,7 +36,7 @@ export async function POST(request: Request) {
     maxAge: TEAM_SESSION_MAX_AGE_SECONDS
   });
 
-  redirect(nextPath);
+  return response;
 }
 
 const stringValue = (value: FormDataEntryValue | null): string =>

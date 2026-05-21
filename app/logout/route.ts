@@ -1,9 +1,8 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+import { NextResponse } from "next/server";
 import { TEAM_SESSION_COOKIE } from "@/lib/player/session";
 
-export async function GET() {
-  const cookieStore = await cookies();
-  cookieStore.delete(TEAM_SESSION_COOKIE);
-  redirect("/login");
+export async function GET(request: Request) {
+  const response = NextResponse.redirect(new URL("/login", request.url));
+  response.cookies.delete(TEAM_SESSION_COOKIE);
+  return response;
 }

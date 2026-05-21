@@ -11,7 +11,7 @@ export function QuestPageView({ quest, error }: QuestPageViewProps) {
     <main className="page-shell">
       <nav className="inline-nav" aria-label="Nawigacja gracza">
         <Link href="/submissions">Zgloszenia</Link>
-        <Link href="/logout">Wyloguj</Link>
+        <a href="/logout">Wyloguj</a>
       </nav>
       <p className="eyebrow">Misja</p>
       <h1>{quest.title}</h1>

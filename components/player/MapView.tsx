@@ -11,7 +11,7 @@ export function MapView({ map }: MapViewProps) {
       <nav className="inline-nav" aria-label="Nawigacja gracza">
         <Link href="/">Start</Link>
         <Link href="/submissions">Zgloszenia</Link>
-        <Link href="/logout">Wyloguj</Link>
+        <a href="/logout">Wyloguj</a>
       </nav>
       <h1>Mapa skarbu</h1>
       <p role="status">

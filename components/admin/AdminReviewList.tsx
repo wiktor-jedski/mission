@@ -10,7 +10,7 @@ export function AdminReviewList({ reviews, error }: AdminReviewListProps) {
   return (
     <main className="page-shell">
       <nav className="inline-nav" aria-label="Nawigacja admina">
-        <Link href="/admin/logout">Wyloguj</Link>
+        <a href="/admin/logout">Wyloguj</a>
       </nav>
       <h1>Zgloszenia do sprawdzenia</h1>
       {error ? <p role="alert">{error}</p> : null}

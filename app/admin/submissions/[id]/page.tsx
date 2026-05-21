@@ -22,7 +22,7 @@ export default async function AdminSubmissionPage({
       <main className="page-shell">
         <nav className="inline-nav" aria-label="Nawigacja admina">
           <Link href="/admin">Lista</Link>
-          <Link href="/admin/logout">Wyloguj</Link>
+          <a href="/admin/logout">Wyloguj</a>
         </nav>
         <h1>Nie znaleziono zgloszenia</h1>
         <p>To zgloszenie nie oczekuje na sprawdzenie.</p>
@@ -34,7 +34,7 @@ export default async function AdminSubmissionPage({
     <main className="page-shell">
       <nav className="inline-nav" aria-label="Nawigacja admina">
         <Link href="/admin">Lista</Link>
-        <Link href="/admin/logout">Wyloguj</Link>
+        <a href="/admin/logout">Wyloguj</a>
       </nav>
       <h1>{review.quest.title}</h1>
       <p>{review.team.name}</p>

@@ -10,7 +10,7 @@ export function SubmissionsView({ submissions }: SubmissionsViewProps) {
     <main className="page-shell">
       <nav className="inline-nav" aria-label="Nawigacja gracza">
         <Link href="/">Start</Link>
-        <Link href="/logout">Wyloguj</Link>
+        <a href="/logout">Wyloguj</a>
       </nav>
       <h1>Zgloszenia druzyny</h1>
       {submissions.length === 0 ? (
