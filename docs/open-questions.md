@@ -52,6 +52,8 @@
 - Polish is the only required language.
 - The app can be rugged and event-specific.
 - The operator fallback will live on the organizer's laptop.
+- Phase 1 seed team names, PIN hashes, quest titles, quest instructions, hints, and safety copy are implementation placeholders until final event content is supplied.
+- The 25 Phase 1 quest slugs are stable and unguessable enough for QR generation, but they should not be printed until the final quest copy is accepted.
 
 ## Remaining Clarifications
 
@@ -66,3 +68,8 @@ None currently blocking requirements.
 - Before deployment, decide whether to accept this Phase 0 scaffold risk temporarily or move to a patched Next/PostCSS release when one is available through the normal dependency range.
 
 Decision: this is an app for a private party, we can accept that 
+
+### Final Phase 1 Seed Content
+
+- Replace placeholder team PIN hashes with real hashes before production seeding.
+- Review and replace placeholder quest copy before QR codes are generated.

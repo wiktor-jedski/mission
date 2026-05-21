@@ -5,7 +5,8 @@ describe("supabaseBoundary", () => {
   it("documents the future Supabase helper module locations without database calls", () => {
     expect(supabaseBoundary).toEqual({
       serverClientModule: "lib/supabase/server",
-      browserClientModule: "lib/supabase/browser"
+      browserClientModule: "lib/supabase/browser",
+      databaseTypesModule: "lib/supabase/database.types"
     });
   });
 });
