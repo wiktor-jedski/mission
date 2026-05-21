@@ -43,9 +43,9 @@ describe("player components", () => {
     render(await Home());
 
     expect(
-      screen.getByRole("heading", { level: 1, name: "Mission Treasure Hunt" })
+      screen.getByRole("heading", { level: 1, name: "Misja: Poszukiwanie Skarbu" })
     ).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Zaloguj druzyne" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Zaloguj drużynę" })).toHaveAttribute(
       "href",
       "/login"
     );
@@ -54,12 +54,13 @@ describe("player components", () => {
   it("renders the home page for logged-in players", () => {
     render(<PlayerHome teamName="Druzyna Zarzewia" />);
 
-    expect(screen.getByText("Jestes zalogowany jako Druzyna Zarzewia.")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Zgloszenia" })).toHaveAttribute(
+    expect(screen.getByText(/Jesteś zalogowany jako/)).toBeInTheDocument();
+    expect(screen.getByText("Druzyna Zarzewia")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Zgłoszenia" })).toHaveAttribute(
       "href",
       "/submissions"
     );
-    expect(screen.getByRole("link", { name: "Wyloguj" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Wyloguj się" })).toHaveAttribute(
       "href",
       "/logout"
     );
@@ -72,7 +73,8 @@ describe("player components", () => {
 
     render(await Home());
 
-    expect(screen.getByText("Jestes zalogowany jako Druzyna Zarzewia.")).toBeInTheDocument();
+    expect(screen.getByText(/Jesteś zalogowany jako/)).toBeInTheDocument();
+    expect(screen.getByText("Druzyna Zarzewia")).toBeInTheDocument();
   });
 
   it("uses the default login redirect path when none is provided", () => {
@@ -82,10 +84,10 @@ describe("player components", () => {
   });
 
   it("renders login form with invalid PIN feedback", () => {
-    render(<LoginForm error="Nieprawidlowy PIN." nextPath="/quests/abc" />);
+    render(<LoginForm error="Nieprawidłowy PIN." nextPath="/quests/abc" />);
 
-    expect(screen.getByLabelText("PIN druzyny")).toBeRequired();
-    expect(screen.getByRole("alert")).toHaveTextContent("Nieprawidlowy PIN.");
+    expect(screen.getByLabelText("PIN drużyny")).toBeRequired();
+    expect(screen.getByRole("alert")).toHaveTextContent("Nieprawidłowy PIN.");
     expect(screen.getByDisplayValue("/quests/abc")).toHaveAttribute("name", "next");
   });
 
@@ -93,11 +95,11 @@ describe("player components", () => {
     render(<QuestPageView quest={questView()} error="Sprawdz dane" />);
 
     expect(screen.getByRole("heading", { level: 1, name: "Pieczec Bursztynu" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Kto dodaje dowod")).toBeRequired();
-    expect(screen.getByLabelText("Link do zdjecia")).toBeRequired();
+    expect(screen.getByLabelText("Kto dodaje dowód")).toBeRequired();
+    expect(screen.getByLabelText("Link do zdjęcia")).toBeRequired();
     expect(screen.getByRole("alert")).toHaveTextContent("Sprawdz dane");
-    expect(screen.getByRole("button", { name: "Wyslij dowod" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Pokaz podpowiedz" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Wyślij dowód" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Pokaż podpowiedź" })).toBeInTheDocument();
   });
 
   it("renders used quest hints", () => {
@@ -108,7 +110,17 @@ describe("player components", () => {
     );
 
     expect(screen.getByText("Szukaj przy kominku.")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Pokaz podpowiedz" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Pokaż podpowiedź" })).not.toBeInTheDocument();
+  });
+
+  it("renders quest page with no status message", () => {
+    render(
+      <QuestPageView
+        quest={questView({ statusMessage: null })}
+      />
+    );
+
+    expect(screen.queryByRole("status")).not.toBeInTheDocument();
   });
 
   it("renders blocked and rejected quest states", () => {
@@ -122,7 +134,7 @@ describe("player components", () => {
     );
 
     expect(screen.getByRole("status")).toHaveTextContent("Dowod czeka na sprawdzenie.");
-    expect(screen.queryByRole("button", { name: "Wyslij dowod" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Wyślij dowód" })).not.toBeInTheDocument();
 
     rerender(
       <QuestPageView
@@ -133,13 +145,13 @@ describe("player components", () => {
       />
     );
     expect(screen.getByRole("alert")).toHaveTextContent("Popraw dowod.");
-    expect(screen.getByRole("button", { name: "Wyslij dowod" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Wyślij dowód" })).toBeInTheDocument();
   });
 
   it("renders empty and populated submission status views", () => {
     const { rerender } = render(<SubmissionsView submissions={[]} />);
 
-    expect(screen.getByText("Brak zgloszen.")).toBeInTheDocument();
+    expect(screen.getByText("Brak zgłoszeń drużyny.")).toBeInTheDocument();
 
     rerender(
       <SubmissionsView
@@ -149,20 +161,27 @@ describe("player components", () => {
             id: "submission-02",
             statusLabel: "Odrzucone",
             rejectionMessage: "Jeszcze raz"
+          }),
+          submissionStatusView({
+            id: "submission-03",
+            statusLabel: "Zaakceptowane",
+            questTitle: "Pieczec Diamentu"
           })
         ]}
       />
     );
     expect(screen.getAllByText("Pieczec Bursztynu")).toHaveLength(2);
+    expect(screen.getByText("Pieczec Diamentu")).toBeInTheDocument();
     expect(screen.getByText("Czeka na sprawdzenie")).toBeInTheDocument();
-    expect(screen.getAllByText("Ala")).toHaveLength(2);
+    expect(screen.getByText("Zaakceptowane")).toBeInTheDocument();
+    expect(screen.getAllByText("Ala")).toHaveLength(3);
     expect(screen.getByText("Jeszcze raz")).toBeInTheDocument();
   });
 
   it("renders the safe unknown quest state", () => {
     render(<UnknownQuestView />);
 
-    expect(screen.getByRole("heading", { name: "Misja niedostepna" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Misja niedostępna" })).toBeInTheDocument();
     expect(screen.queryByText(/druzyna|dowod|postep/i)).not.toBeInTheDocument();
   });
 });
@@ -170,12 +189,12 @@ describe("player components", () => {
 describe("phase 3 components", () => {
   it("renders admin login state", () => {
     const { rerender } = render(
-      <AdminLoginForm error="Nieprawidlowe haslo admina." nextPath="/admin" />
+      <AdminLoginForm error="Nieprawidłowe hasło admina." nextPath="/admin" />
     );
 
-    expect(screen.getByLabelText("Haslo admina")).toBeRequired();
+    expect(screen.getByLabelText("Hasło admina")).toBeRequired();
     expect(screen.getByRole("alert")).toHaveTextContent(
-      "Nieprawidlowe haslo admina."
+      "Nieprawidłowe hasło admina."
     );
     expect(screen.getByDisplayValue("/admin")).toHaveAttribute("name", "next");
 
@@ -186,7 +205,7 @@ describe("phase 3 components", () => {
   it("renders empty and populated admin review lists", () => {
     const { rerender } = render(<AdminReviewList reviews={[]} />);
 
-    expect(screen.getByText("Brak zgloszen oczekujacych.")).toBeInTheDocument();
+    expect(screen.getByText("Brak oczekujących zgłoszeń.")).toBeInTheDocument();
 
     rerender(
       <AdminReviewList reviews={[pendingReview()]} error="Nie udalo sie wykonac akcji." />
@@ -194,12 +213,12 @@ describe("phase 3 components", () => {
 
     expect(screen.getByRole("alert")).toHaveTextContent("Nie udalo sie wykonac akcji.");
     expect(screen.getByRole("heading", { name: "Pieczec Bursztynu" })).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Szczegoly" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /Szczegóły/ })).toHaveAttribute(
       "href",
       "/admin/submissions/submission-01"
     );
-    expect(screen.getByRole("button", { name: "Zatwierdz" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Odrzuc" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Zatwierdź/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Odrzuć/ })).toBeInTheDocument();
 
     rerender(<AdminReviewList reviews={[pendingReview({ note: null })]} />);
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
@@ -210,28 +229,28 @@ describe("phase 3 components", () => {
       <ProofValue proofKind="photo_link" proofValue="https://example.com/proof" />
     );
 
-    expect(screen.getByRole("link", { name: "Otworz link" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Otwórz link do dowodu" })).toHaveAttribute(
       "rel",
       "noreferrer noopener"
     );
 
     rerender(<ProofValue proofKind="text_response" proofValue="odpowiedz" />);
-    expect(screen.queryByRole("link", { name: "Otworz link" })).not.toBeInTheDocument();
-    expect(screen.getByText("Dowod: odpowiedz")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Otwórz link do dowodu" })).not.toBeInTheDocument();
+    expect(screen.getByText("odpowiedz")).toBeInTheDocument();
 
     rerender(<ProofValue proofKind="photo_link" proofValue="nie-url" />);
-    expect(screen.getByText("Dowod: nie-url")).toBeInTheDocument();
+    expect(screen.getByText("nie-url")).toBeInTheDocument();
 
     rerender(<ProofValue proofKind="photo_link" proofValue="ftp://example.com/proof" />);
-    expect(screen.getByText("Dowod: ftp://example.com/proof")).toBeInTheDocument();
+    expect(screen.getByText("ftp://example.com/proof")).toBeInTheDocument();
   });
 
   it("renders review action controls", () => {
     render(<ReviewActionForms submissionId="submission-01" />);
 
     expect(screen.getAllByDisplayValue("submission-01")).toHaveLength(2);
-    expect(screen.getByLabelText("Powod odrzucenia")).toBeRequired();
-    expect(screen.getByLabelText("Wiadomosc dla druzyny")).toHaveAttribute(
+    expect(screen.getByLabelText("Powód odrzucenia")).toBeRequired();
+    expect(screen.getByLabelText("Wiadomość dla drużyny")).toHaveAttribute(
       "maxLength",
       "500"
     );
@@ -240,12 +259,12 @@ describe("phase 3 components", () => {
   it("renders admin override controls", () => {
     render(<AdminOverrideForms teams={[team()]} quests={[quest()]} />);
 
-    expect(screen.getByRole("heading", { name: "Narzedzia admina" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Odkryj fragment" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Ukryj fragment" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Pomin misje" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Zalicz awarie misji" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Dodaj dowod zastepczy" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Narzędzia developerskie" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Odkryj fragment mapy" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Ukryj fragment mapy" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Pomiń misję" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Zalicz awarię misji" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Dodaj dowód zastępczy" })).toBeInTheDocument();
 
     const { container } = render(<AdminOverrideForms teams={[]} quests={[quest()]} />);
     expect(container).toBeEmptyDOMElement();
@@ -253,7 +272,7 @@ describe("phase 3 components", () => {
 
   it("renders admin audit log states", () => {
     const { rerender } = render(<AdminAuditLog entries={[]} />);
-    expect(screen.getByText("Brak zdarzen audytu.")).toBeInTheDocument();
+    expect(screen.getByText("Brak zdarzeń audytu.")).toBeInTheDocument();
 
     rerender(
       <AdminAuditLog
@@ -283,9 +302,9 @@ describe("phase 3 components", () => {
         ]}
       />
     );
-    expect(screen.getAllByText("Logowanie druzyny")).toHaveLength(2);
+    expect(screen.getAllByText("Logowanie drużyny")).toHaveLength(2);
     expect(screen.getByText("unknown_action")).toBeInTheDocument();
-    expect(screen.getByText("Metadane: reason: test")).toBeInTheDocument();
+    expect(screen.getByText("reason: test")).toBeInTheDocument();
   });
 
   it("polls pending submissions and keeps stale data on errors", async () => {
@@ -304,11 +323,11 @@ describe("phase 3 components", () => {
       />
     );
 
-    expect(screen.getByText("Brak zgloszen oczekujacych.")).toBeInTheDocument();
+    expect(screen.getByText("Brak oczekujących zgłoszeń.")).toBeInTheDocument();
     await act(async () => {
       await vi.advanceTimersByTimeAsync(PENDING_POLL_INTERVAL_MS);
     });
-    expect(screen.getByRole("link", { name: "Szczegoly" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /Szczegóły/ })).toHaveAttribute(
       "href",
       "/admin/submissions/submission-02"
     );
@@ -316,7 +335,7 @@ describe("phase 3 components", () => {
       await vi.advanceTimersByTimeAsync(PENDING_POLL_INTERVAL_MS);
     });
     expect(screen.getByRole("alert")).toHaveTextContent("ostatnie dane");
-    expect(screen.getByRole("link", { name: "Szczegoly" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: /Szczegóły/ })).toHaveAttribute(
       "href",
       "/admin/submissions/submission-02"
     );
@@ -347,7 +366,7 @@ describe("phase 3 components", () => {
     await act(async () => {
       await vi.advanceTimersByTimeAsync(PENDING_POLL_INTERVAL_MS);
     });
-    expect(screen.getByRole("status")).toHaveTextContent("Odswiezam");
+    expect(screen.getByRole("status")).toHaveTextContent("Odświeżam");
     await act(async () => {
       resolveJson({ reviews: [] });
     });
@@ -364,7 +383,7 @@ describe("phase 3 components", () => {
         ]}
       />
     );
-    expect(screen.getByText("Dowod: nie-url")).toBeInTheDocument();
+    expect(screen.getByText("nie-url")).toBeInTheDocument();
 
     rerender(
       <AdminPendingPoller
@@ -373,7 +392,7 @@ describe("phase 3 components", () => {
         ]}
       />
     );
-    expect(screen.getByText("Dowod: odpowiedz")).toBeInTheDocument();
+    expect(screen.getByText("odpowiedz")).toBeInTheDocument();
 
     rerender(
       <AdminPendingPoller
@@ -382,7 +401,7 @@ describe("phase 3 components", () => {
         ]}
       />
     );
-    expect(screen.getByRole("link", { name: "Otworz link" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Otwórz link do dowodu" })).toHaveAttribute(
       "href",
       "http://example.com/proof"
     );
@@ -400,8 +419,8 @@ describe("phase 3 components", () => {
       />
     );
 
-    expect(screen.getByRole("status")).toHaveTextContent("20/21");
-    expect(screen.getByText("Finalny skarb jest jeszcze zablokowany.")).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("20 / 21");
+    expect(screen.getByText("Finalny skarb pozostaje zablokowany. Zdobądź 21 zatwierdzonych misji, aby go odkryć!")).toBeInTheDocument();
 
     rerender(
       <MapView
@@ -414,8 +433,20 @@ describe("phase 3 components", () => {
       />
     );
     expect(
-      screen.getByRole("link", { name: "Otworz zdjecie finalnej nagrody" })
+      screen.getByRole("link", { name: "Otwórz zdjęcie finalnej nagrody" })
     ).toHaveAttribute("href", "/final-prize-photo.jpg");
+
+    rerender(
+      <MapView
+        map={{
+          approvedQuestCount: 5,
+          revealedFragmentCount: 5,
+          requiredApprovalCount: 0,
+          isFinalUnlocked: false
+        }}
+      />
+    );
+    expect(screen.getByRole("status")).toHaveTextContent("5 / 21");
   });
 });
 
@@ -428,7 +459,7 @@ const questView = (overrides: Partial<QuestViewModel> = {}): QuestViewModel => (
   safetyWarning: "Bez szkody.",
   hintText: null,
   hintUsed: false,
-  proofLabel: "Link do zdjecia",
+  proofLabel: "Link do zdjęcia",
   statusMessage: "Misja gotowa do wykonania.",
   canSubmit: true,
   latestRejectionMessage: null,

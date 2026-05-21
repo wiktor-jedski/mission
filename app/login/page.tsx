@@ -7,7 +7,7 @@ type LoginPageProps = {
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const params = await searchParams;
-  const error = params?.error === "invalid" ? "Nieprawidlowy PIN." : undefined;
+  const error = params?.error === "invalid" ? "Nieprawidłowy PIN." : undefined;
   const nextPath = normalizePlayerRedirect(
     singleValue(params?.next),
     "/"

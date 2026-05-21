@@ -12,7 +12,7 @@ describe("player view models", () => {
   it("builds not-started, pending, approved, and rejected quest states", () => {
     expect(buildQuestViewModel(quest, progress(), [])).toMatchObject({
       title: quest.title,
-      proofLabel: "Link do zdjecia",
+      proofLabel: "Link do zdjęcia",
       statusMessage: "Misja gotowa do wykonania.",
       canSubmit: true,
       latestRejectionMessage: null

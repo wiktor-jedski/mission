@@ -68,13 +68,13 @@ export const validateSubmissionForm = (
 export const proofInputLabel = (proofKind: ProofKind): string => {
   switch (proofKind) {
     case "photo_link":
-      return "Link do zdjecia";
+      return "Link do zdjęcia";
     case "video_link":
       return "Link do filmu";
     case "audio_link":
       return "Link do nagrania audio";
     case "text_response":
-      return "Odpowiedz tekstowa";
+      return "Odpowiedź tekstowa";
   }
 };
 

@@ -131,3 +131,17 @@ Decision: applied
 - The `/map` page links to that file only after the current team reaches 21 approved quests.
 
 Decision: completed
+
+## Phase 6 UI/UX Design Assumptions and Clarifications
+
+### Visual Theme & Tokens
+- We assume a mobile-first premium **Dark-Mode-First Mystical Vault** theme is preferred for outdoor readability and an immersive feeling.
+- Headings will utilize the **Cinzel** Google Font to capture the classic rugged fantasy atmosphere.
+- Colors are defined as deep obsidian/charcoal (`#120f0d`), leather brown (`#1e1814`), radiant old gold (`#c5a059`), and emerald/ruby/sapphire colors for status states.
+
+### Polish Copy Standards
+- We assume that the Polish text should use correct grammatical accents and diacritics (e.g. `drużyny` instead of `druzyny`, `Zgłoszenia` instead of `Zgloszenia`), and we will update the relevant tests to match this audited copy.
+
+### CSS-only Map Fragment Grid
+- We assume a custom-built, responsive CSS Grid of 21 ancient runic slot cards represents the player's map state, avoiding heavy image downloads. Locked fragments show a runic lock icon, while unlocked fragments show gold borders and active green checkmarks.
+

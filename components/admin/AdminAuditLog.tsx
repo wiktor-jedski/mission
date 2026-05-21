@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PL_DICTIONARY } from "@/lib/player/copy-dictionary";
 import type { AuditLogEntry } from "@/lib/runtime/repository";
 
 type AdminAuditLogProps = {
@@ -9,26 +10,66 @@ export function AdminAuditLog({ entries }: AdminAuditLogProps) {
   return (
     <main className="page-shell">
       <nav className="inline-nav" aria-label="Nawigacja admina">
-        <Link href="/admin">Zgloszenia</Link>
-        <a href="/admin/logout">Wyloguj</a>
+        <Link href="/admin">{PL_DICTIONARY.nav.adminList}</Link>
+        <a href="/admin/logout">{PL_DICTIONARY.nav.adminLogout}</a>
       </nav>
-      <h1>Dziennik audytu</h1>
+      
+      <h1>{PL_DICTIONARY.admin.auditTitle}</h1>
+      
       {entries.length === 0 ? (
-        <p>Brak zdarzen audytu.</p>
+        <div className="panel-rugged" style={{ textAlign: "center", opacity: 0.8 }}>
+          <p style={{ margin: 0, fontStyle: "italic", color: "var(--text-muted)" }}>
+            {PL_DICTIONARY.admin.noAudit}
+          </p>
+        </div>
       ) : (
         <ul className="status-list">
           {entries.map((entry) => (
             <li key={entry.audit.id}>
               <article>
-                <h2>{auditLabel(entry.audit.action)}</h2>
-                <p>{new Date(entry.audit.createdAt).toLocaleString("pl-PL")}</p>
-                <p>Aktor: {entry.audit.actorType}</p>
-                {entry.team ? <p>Druzyna: {entry.team.name}</p> : null}
-                {entry.quest ? <p>Misja: {entry.quest.title}</p> : null}
-                {entry.submission ? (
-                  <p>Zgloszenie: {entry.submission.contributorName}</p>
-                ) : null}
-                <p>Metadane: {metadataText(entry.audit.metadata)}</p>
+                <div style={{ display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "0.5rem", borderBottom: "1px solid var(--border-color)", paddingBottom: "0.5rem", marginBottom: "0.5rem" }}>
+                  <h2 style={{ fontSize: "1.1rem", color: "var(--text-gold)", margin: 0, border: "none", padding: 0 }}>
+                    {auditLabel(entry.audit.action)}
+                  </h2>
+                  <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>
+                    {new Date(entry.audit.createdAt).toLocaleString("pl-PL")}
+                  </span>
+                </div>
+                
+                <div style={{ display: "grid", gap: "0.25rem", fontSize: "0.9rem" }}>
+                  <div>
+                    <span style={{ color: "var(--text-muted)" }}>{PL_DICTIONARY.admin.actorLabel}:</span>{" "}
+                    <strong>{entry.audit.actorType}</strong>
+                  </div>
+                  
+                  {entry.team ? (
+                    <div>
+                      <span style={{ color: "var(--text-muted)" }}>{PL_DICTIONARY.admin.teamLabel}:</span>{" "}
+                      <strong>{entry.team.name}</strong>
+                    </div>
+                  ) : null}
+                  
+                  {entry.quest ? (
+                    <div>
+                      <span style={{ color: "var(--text-muted)" }}>{PL_DICTIONARY.admin.questLabel}:</span>{" "}
+                      <strong>{entry.quest.title}</strong>
+                    </div>
+                  ) : null}
+                  
+                  {entry.submission ? (
+                    <div>
+                      <span style={{ color: "var(--text-muted)" }}>{PL_DICTIONARY.admin.contributorLabel}:</span>{" "}
+                      <strong>{entry.submission.contributorName}</strong>
+                    </div>
+                  ) : null}
+                  
+                  <div style={{ marginTop: "0.25rem", padding: "0.4rem 0.6rem", backgroundColor: "var(--bg-well)", borderRadius: "3px", border: "1px solid var(--border-color)" }}>
+                    <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>{PL_DICTIONARY.admin.metadataLabel}:</span>{" "}
+                    <code style={{ fontSize: "0.85rem", color: "var(--text-primary)" }}>
+                      {metadataText(entry.audit.metadata)}
+                    </code>
+                  </div>
+                </div>
               </article>
             </li>
           ))}
@@ -41,27 +82,27 @@ export function AdminAuditLog({ entries }: AdminAuditLogProps) {
 const auditLabel = (action: string): string => {
   switch (action) {
     case "team_login":
-      return "Logowanie druzyny";
+      return "Logowanie drużyny";
     case "quest_viewed":
       return "Otwarcie misji";
     case "submission_created":
-      return "Nowe zgloszenie";
+      return "Nowe zgłoszenie";
     case "hint_used":
-      return "Uzycie podpowiedzi";
+      return "Użycie podpowiedzi";
     case "submission_approved":
       return "Zatwierdzenie";
     case "submission_rejected":
       return "Odrzucenie";
     case "manual_fragment_revealed":
-      return "Reczne odkrycie fragmentu";
+      return "Ręczne odkrycie fragmentu";
     case "manual_fragment_hidden":
-      return "Reczne ukrycie fragmentu";
+      return "Ręczne ukrycie fragmentu";
     case "quest_skipped":
-      return "Pominiecie misji";
+      return "Pominięcie misji";
     case "broken_quest_overridden":
       return "Zaliczenie awarii misji";
     case "replacement_proof_entered":
-      return "Dowod zastepczy";
+      return "Dowód zastępczy";
     default:
       return action;
   }

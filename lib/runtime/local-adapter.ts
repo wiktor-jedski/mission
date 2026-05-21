@@ -178,7 +178,10 @@ export class LocalRuntimeRepository implements RuntimeRepository {
     const snapshot = this.playerRepository.snapshot();
     return this.auditLogs
       .slice()
-      .sort((first, second) => second.createdAt.localeCompare(first.createdAt))
+      .sort((first, second) => {
+        const cmp = second.createdAt.localeCompare(first.createdAt);
+        return cmp !== 0 ? cmp : second.id.localeCompare(first.id);
+      })
       .slice(0, limit)
       .map((audit) => ({
         audit,

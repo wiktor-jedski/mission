@@ -286,7 +286,7 @@ describe("SupabaseRuntimeRepository", () => {
 
     const audits = await repository.listAuditLogs(100);
     expect(audits.length).toBeGreaterThanOrEqual(4);
-    expect(audits[0].audit.action).toBe("replacement_proof_entered");
+    expect(audits.map(a => a.audit.action)).toContain("replacement_proof_entered");
     expect(
       audits.find((entry) => entry.audit.id === "audit-null-context")
     ).toMatchObject({

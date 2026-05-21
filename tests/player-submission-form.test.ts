@@ -91,9 +91,9 @@ describe("submission form validation", () => {
   });
 
   it("returns labels for every proof kind", () => {
-    expect(proofInputLabel("photo_link")).toBe("Link do zdjecia");
+    expect(proofInputLabel("photo_link")).toBe("Link do zdjęcia");
     expect(proofInputLabel("video_link")).toBe("Link do filmu");
     expect(proofInputLabel("audio_link")).toBe("Link do nagrania audio");
-    expect(proofInputLabel("text_response")).toBe("Odpowiedz tekstowa");
+    expect(proofInputLabel("text_response")).toBe("Odpowiedź tekstowa");
   });
 });

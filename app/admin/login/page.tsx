@@ -11,9 +11,9 @@ export default async function AdminLoginPage({
   const query = await searchParams;
   const error =
     query?.error === "invalid"
-      ? "Nieprawidlowe haslo admina."
+      ? "Nieprawidłowe hasło admina."
       : query?.error === "config"
-        ? "Brakuje konfiguracji hasla admina."
+        ? "Brakuje konfiguracji hasła admina."
         : undefined;
   const rawNext = Array.isArray(query?.next) ? query?.next[0] : query?.next;
 
