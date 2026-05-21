@@ -64,8 +64,143 @@ async function generateQRs() {
     }
   }
 
-  console.log(`\n🎉 Success! All 25 QR codes are generated and saved inside the "public/qr-codes" folder.`);
-  console.log(`You can view them locally, print them, or access them at http://localhost:3000/qr-codes/<filename> during development.`);
+  // Generate a beautiful, print-ready HTML page
+  const htmlPath = path.join(OUTPUT_DIR, "print.html");
+  let cardHtmls = "";
+  for (const quest of QUESTS) {
+    const questUrl = `${DOMAIN}/quests/${quest.slug}`;
+    const filename = `${quest.id}-${quest.slug}.png`;
+    cardHtmls += `
+    <div class="card">
+      <h3>${quest.id.toUpperCase()}</h3>
+      <img src="./${filename}" alt="${quest.id.toUpperCase()}">
+      <div class="url">${questUrl}</div>
+    </div>`;
+  }
+
+  const htmlContent = `<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Drukuj Kody QR - Treasure Hunt</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin: 30px;
+      background: #f8f9fa;
+      color: #333;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    h1 {
+      margin: 0;
+      color: #1a1a1a;
+    }
+    p {
+      margin: 5px 0 0 0;
+      color: #666;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 25px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .card {
+      background: white;
+      border: 2px dashed #ccc;
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+      break-inside: avoid;
+      page-break-inside: avoid;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .card h3 {
+      margin: 0 0 15px 0;
+      font-size: 1.1em;
+      color: #111;
+      border-bottom: 1px solid #eee;
+      width: 100%;
+      padding-bottom: 8px;
+    }
+    .card img {
+      width: 200px;
+      height: 200px;
+      margin-bottom: 15px;
+      display: block;
+    }
+    .card .url {
+      font-size: 0.7em;
+      color: #777;
+      word-break: break-all;
+      font-family: monospace;
+      max-width: 100%;
+    }
+    .print-btn {
+      display: block;
+      margin: 20px auto;
+      padding: 12px 24px;
+      background: #0070f3;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 1em;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .print-btn:hover {
+      background: #0051cb;
+    }
+    @media print {
+      body {
+        background: white;
+        margin: 0;
+        padding: 0;
+      }
+      header, .print-btn {
+        display: none;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+      }
+      .card {
+        border: 2px dashed #999;
+        box-shadow: none;
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Wydruk Kodów QR - Treasure Hunt</h1>
+    <p>Poniższa strona jest zoptymalizowana do druku. Kliknij przycisk poniżej lub naciśnij Ctrl+P (Cmd+P) w przeglądarce, aby wydrukować wszystkie kody.</p>
+    <button class="print-btn" onclick="window.print()">Drukuj Kody</button>
+  </header>
+  <div class="grid">
+    ${cardHtmls}
+  </div>
+</body>
+</html>`;
+
+  fs.writeFileSync(htmlPath, htmlContent);
+  console.log(`[✓] Generated print sheet -> public/qr-codes/print.html`);
+
+  console.log(`\n🎉 Success! All 25 QR codes and the printable sheet are saved inside the "public/qr-codes" folder.`);
+  console.log(`To print them, simply run the development server (npm run dev) and open:`);
+  console.log(`👉 http://localhost:3000/qr-codes/print.html`);
+  console.log(`Or double-click the file in your file explorer:`);
+  console.log(`👉 file://${htmlPath}`);
 }
 
 generateQRs();
