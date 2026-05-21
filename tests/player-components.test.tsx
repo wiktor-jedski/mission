@@ -407,7 +407,14 @@ describe("phase 3 components", () => {
     );
   });
 
-  it("renders locked and unlocked map states", () => {
+  it("renders locked and unlocked map states", async () => {
+    const prefsMod = await import("@/lib/player/preferences");
+    vi.spyOn(prefsMod, "useEffectsPreferences").mockReturnValue({
+      preferences: { animationsEnabled: false, soundEnabled: false, introSkipped: true },
+      loaded: true,
+      updatePreference: vi.fn(),
+    });
+
     const { rerender } = render(
       <MapView
         map={{
@@ -447,6 +454,163 @@ describe("phase 3 components", () => {
       />
     );
     expect(screen.getByRole("status")).toHaveTextContent("5 / 21");
+  });
+
+  it("animates newly unlocked map fragments", async () => {
+    const prefsMod = await import("@/lib/player/preferences");
+    vi.spyOn(prefsMod, "useEffectsPreferences").mockReturnValue({
+      preferences: { animationsEnabled: true, soundEnabled: true, introSkipped: true },
+      loaded: true,
+      updatePreference: vi.fn(),
+    });
+    vi.useFakeTimers();
+
+    const { rerender } = render(
+      <MapView
+        map={{
+          approvedQuestCount: 1,
+          revealedFragmentCount: 1,
+          requiredApprovalCount: 21,
+          isFinalUnlocked: false
+        }}
+      />
+    );
+
+    // Initial state: 1 fragment revealed
+    expect(screen.getByRole("status")).toHaveTextContent("1 / 21");
+
+    // Rerender with 2 fragments revealed
+    rerender(
+      <MapView
+        map={{
+          approvedQuestCount: 2,
+          revealedFragmentCount: 2,
+          requiredApprovalCount: 21,
+          isFinalUnlocked: false
+        }}
+      />
+    );
+
+    // Should still show 1 / 21 initially because animation is playing
+    expect(screen.getByRole("status")).toHaveTextContent("1 / 21");
+    
+    // Fast-forward animation
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+
+    // Should now show 2 / 21
+    expect(screen.getByRole("status")).toHaveTextContent("2 / 21");
+    
+    vi.useRealTimers();
+  });
+
+  it("handles audio playback errors gracefully", async () => {
+    const prefsMod = await import("@/lib/player/preferences");
+    vi.spyOn(prefsMod, "useEffectsPreferences").mockReturnValue({
+      preferences: { animationsEnabled: true, soundEnabled: true, introSkipped: true },
+      loaded: true,
+      updatePreference: vi.fn(),
+    });
+
+    const originalPlay = window.HTMLAudioElement.prototype.play;
+    window.HTMLAudioElement.prototype.play = vi.fn().mockReturnValue(Promise.reject(new Error("Not allowed")));
+
+    const { rerender } = render(
+      <MapView
+        map={{
+          approvedQuestCount: 1,
+          revealedFragmentCount: 1,
+          requiredApprovalCount: 21,
+          isFinalUnlocked: false
+        }}
+      />
+    );
+
+    // Trigger animation
+    rerender(
+      <MapView
+        map={{
+          approvedQuestCount: 2,
+          revealedFragmentCount: 2,
+          requiredApprovalCount: 21,
+          isFinalUnlocked: false
+        }}
+      />
+    );
+
+    // Give microtasks a chance to run so the catch block executes
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    // Animation should still proceed despite audio error (no crash)
+    expect(screen.getByRole("status")).toHaveTextContent("1 / 21");
+
+    window.HTMLAudioElement.prototype.play = originalPlay;
+  });
+
+  it("handles MapView when preferences are not yet loaded", async () => {
+    const prefsMod = await import("@/lib/player/preferences");
+    vi.spyOn(prefsMod, "useEffectsPreferences").mockReturnValue({
+      preferences: { animationsEnabled: true, soundEnabled: true, introSkipped: true },
+      loaded: false,
+      updatePreference: vi.fn(),
+    });
+
+    const { container } = render(
+      <MapView
+        map={{
+          approvedQuestCount: 20,
+          revealedFragmentCount: 20,
+          requiredApprovalCount: 21,
+          isFinalUnlocked: false
+        }}
+      />
+    );
+    expect(container).toBeDefined();
+  });
+
+  it("applies complete effect when final unlocked and animations enabled", async () => {
+    const prefsMod = await import("@/lib/player/preferences");
+    vi.spyOn(prefsMod, "useEffectsPreferences").mockReturnValue({
+      preferences: { animationsEnabled: true, soundEnabled: true, introSkipped: true },
+      loaded: true,
+      updatePreference: vi.fn(),
+    });
+    vi.useFakeTimers();
+
+    const { rerender } = render(
+      <MapView
+        map={{
+          approvedQuestCount: 20,
+          revealedFragmentCount: 20,
+          requiredApprovalCount: 21,
+          isFinalUnlocked: false
+        }}
+      />
+    );
+
+    rerender(
+      <MapView
+        map={{
+          approvedQuestCount: 21,
+          revealedFragmentCount: 21,
+          requiredApprovalCount: 21,
+          isFinalUnlocked: true
+        }}
+      />
+    );
+
+    act(() => {
+      vi.advanceTimersByTime(2000);
+    });
+
+    // Should apply map-complete-effect
+    const mainElement = screen.getByRole("main");
+    expect(mainElement).toHaveClass("map-complete-effect");
+
+    vi.useRealTimers();
   });
 });
 

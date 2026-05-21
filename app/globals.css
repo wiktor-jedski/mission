@@ -430,3 +430,70 @@ tr:hover {
     grid-template-columns: 1.2fr 1.8fr;
   }
 }
+
+/* Phase 7 Map Animations */
+@keyframes reveal-flare {
+  0% {
+    transform: scale(0.9);
+    opacity: 0;
+    box-shadow: 0 0 0 rgba(197, 160, 89, 0);
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+    box-shadow: 0 0 20px rgba(197, 160, 89, 0.8);
+    border-color: #ffd700;
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 5px rgba(197, 160, 89, 0.4);
+    border-color: var(--border-glow);
+  }
+}
+
+.animating-reveal {
+  animation: reveal-flare 2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes map-completion-pulse {
+  0% {
+    box-shadow: inset 0 0 0 rgba(197, 160, 89, 0);
+  }
+  50% {
+    box-shadow: inset 0 0 30px rgba(197, 160, 89, 0.4);
+  }
+  100% {
+    box-shadow: inset 0 0 0 rgba(197, 160, 89, 0);
+  }
+}
+
+.map-complete-effect {
+  animation: map-completion-pulse 4s ease-in-out infinite;
+}
+
+@keyframes final-prize-appear {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.final-prize-panel {
+  animation: final-prize-appear 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animating-reveal {
+    animation: none;
+  }
+  .map-complete-effect {
+    animation: none;
+  }
+  .final-prize-panel {
+    animation: none;
+  }
+}

@@ -145,3 +145,13 @@ Decision: completed
 ### CSS-only Map Fragment Grid
 - We assume a custom-built, responsive CSS Grid of 21 ancient runic slot cards represents the player's map state, avoiding heavy image downloads. Locked fragments show a runic lock icon, while unlocked fragments show gold borders and active green checkmarks.
 
+## Phase 7 Reveal Effects and Intro Clarifications
+
+### Obelisk Audio Asset
+- Owner action: Please replace `public/obelisk-reveal.mp3` with the final obelisk-style sound asset before the event, or confirm if you want me to use a specific royalty-free sound.
+
+### Intro Copy
+- Owner action: The intro screen copy will use thematic placeholder Polish text located in `lib/player/copy-dictionary.ts`. Review and adjust this before production.
+
+### Client-Side Preferences Persistence
+- The current implementation uses `localStorage` for effects preferences (animations/sound toggle and skipped intro). If a team logs in on a new device during the game, these effects settings will reset to default. Confirm whether this client-only persistence is acceptable for this non-essential feature, or if it should be migrated to database-backed persistence in a future phase.

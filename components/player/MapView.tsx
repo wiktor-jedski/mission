@@ -1,17 +1,71 @@
+"use client";
+
+import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { PL_DICTIONARY } from "@/lib/player/copy-dictionary";
 import type { MapProgressSnapshot } from "@/lib/domain/types";
+import { useEffectsPreferences } from "@/lib/player/preferences";
 
 type MapViewProps = {
   map: MapProgressSnapshot;
 };
 
 export function MapView({ map }: MapViewProps) {
+  const { preferences, loaded } = useEffectsPreferences();
+  const [prevCount, setPrevCount] = useState(map.revealedFragmentCount);
+  const [animState, setAnimState] = useState<"idle" | "playing" | "completed">("idle");
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Initialize audio lazily to avoid SSR issues
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      audioRef.current = new Audio("/obelisk-reveal.mp3");
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!loaded) return;
+
+    if (map.revealedFragmentCount > prevCount) {
+      if (preferences.animationsEnabled) {
+        setAnimState("playing");
+        
+        if (preferences.soundEnabled && audioRef.current) {
+          audioRef.current.currentTime = 0;
+          const playPromise = audioRef.current.play();
+          if (playPromise !== undefined) {
+            playPromise.catch((e) => {
+              // Autoplay or missing audio fallback - log silently and continue
+              console.warn("Audio play blocked or failed", e);
+            });
+          }
+        }
+
+        const timer = setTimeout(() => {
+          setAnimState("completed");
+          setPrevCount(map.revealedFragmentCount);
+        }, 2000); // 2 second reveal animation
+        
+        return () => clearTimeout(timer);
+      } else {
+        // Fallback: No animation
+        setAnimState("completed");
+        setPrevCount(map.revealedFragmentCount);
+      }
+    } else if (map.revealedFragmentCount < prevCount) {
+      // In case admin manually hides a fragment
+      setPrevCount(map.revealedFragmentCount);
+    }
+  }, [map.revealedFragmentCount, prevCount, preferences, loaded]);
+
   const totalFragments = map.requiredApprovalCount || 21;
   const fragments = Array.from({ length: totalFragments }, (_, i) => i + 1);
 
+  // The number we show as 'statically' revealed depends on animation state
+  const isComplete = animState === "completed" && map.isFinalUnlocked;
+  
   return (
-    <main className="page-shell">
+    <main className={`page-shell ${isComplete && preferences.animationsEnabled ? "map-complete-effect" : ""}`}>
       <nav className="inline-nav" aria-label="Nawigacja gracza">
         <Link href="/">{PL_DICTIONARY.nav.start}</Link>
         <Link href="/submissions">{PL_DICTIONARY.nav.submissions}</Link>
@@ -23,12 +77,12 @@ export function MapView({ map }: MapViewProps) {
       <div className="panel-rugged" style={{ marginBottom: "2rem", textAlign: "center" }}>
         <p className="eyebrow">{PL_DICTIONARY.map.progressLabel}</p>
         <p role="status" style={{ fontSize: "2rem", color: "var(--text-gold)", fontWeight: "bold", margin: "0.5rem 0" }}>
-          {map.revealedFragmentCount} / {totalFragments}
+          {animState === "playing" ? prevCount : map.revealedFragmentCount} / {totalFragments}
         </p>
         <div style={{ width: "100%", backgroundColor: "var(--bg-well)", height: "8px", borderRadius: "4px", overflow: "hidden" }}>
           <div 
             style={{ 
-              width: `${(map.revealedFragmentCount / totalFragments) * 100}%`, 
+              width: `${((animState === "playing" ? prevCount : map.revealedFragmentCount) / totalFragments) * 100}%`, 
               backgroundColor: "var(--border-glow)", 
               height: "100%", 
               transition: "width 0.4s ease" 
@@ -39,14 +93,24 @@ export function MapView({ map }: MapViewProps) {
 
       <div className="map-grid-container">
         {fragments.map((num) => {
-          const isRevealed = num <= map.revealedFragmentCount;
+          const staticallyRevealed = num <= prevCount;
+          const isNewlyRevealed = num > prevCount && num <= map.revealedFragmentCount;
+          
+          let tileClass = "locked";
+          if (staticallyRevealed) tileClass = "revealed";
+          if (isNewlyRevealed) {
+             tileClass = animState === "playing" && preferences.animationsEnabled 
+               ? "revealed animating-reveal" 
+               : "revealed";
+          }
+
           return (
             <div 
               key={num} 
-              className={`map-rune-tile ${isRevealed ? "revealed" : "locked"}`}
-              title={isRevealed ? `Fragment ${num} odkryty` : `Fragment ${num} zablokowany`}
+              className={`map-rune-tile ${tileClass}`}
+              title={staticallyRevealed || isNewlyRevealed ? `Fragment ${num} odkryty` : `Fragment ${num} zablokowany`}
             >
-              {isRevealed ? (
+              {staticallyRevealed || isNewlyRevealed ? (
                 <>
                   <span className="check-badge">✓</span>
                   <span className="tile-number">{num}</span>
@@ -63,8 +127,8 @@ export function MapView({ map }: MapViewProps) {
       </div>
 
       <div style={{ marginTop: "2rem" }}>
-        {map.isFinalUnlocked ? (
-          <section aria-labelledby="final-prize-heading" className="panel-rugged" style={{ border: "2px solid var(--border-glow)" }}>
+        {map.isFinalUnlocked && (animState === "completed" || !preferences.animationsEnabled) ? (
+          <section aria-labelledby="final-prize-heading" className="panel-rugged final-prize-panel" style={{ border: "2px solid var(--border-glow)" }}>
             <h2 id="final-prize-heading" style={{ color: "var(--text-gold)" }}>
               {PL_DICTIONARY.map.finalPrizeHeading}
             </h2>

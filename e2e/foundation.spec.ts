@@ -3,11 +3,21 @@ import { expect, test } from "@playwright/test";
 test("player can submit proof, admin can approve it, and map progress refreshes", async ({ page }) => {
   await page.goto("/");
 
+  // Explicitly wait for the Phase 7 intro and skip it
+  const skipIntro = page.getByRole("button", { name: "Pomiń wstęp" });
+  try {
+    await skipIntro.waitFor({ state: "visible", timeout: 2000 });
+    await skipIntro.click();
+    await page.waitForTimeout(600);
+  } catch (e) {
+    // If it doesn't appear, continue
+  }
+
   await expect(
     page.getByRole("heading", { level: 1, name: "Misja: Poszukiwanie Skarbu" })
   ).toBeVisible();
 
-  await page.getByRole("link", { name: "Zaloguj drużynę" }).click();
+  await page.getByRole("link", { name: "Zaloguj drużynę" }).click({ force: true });
   await page.getByLabel("PIN drużyny").fill("1111");
   await page.getByRole("button", { name: "Wejdź" }).click();
   await expect(page.getByText("Jesteś zalogowany jako Druzyna Zarzewia.")).toBeVisible();

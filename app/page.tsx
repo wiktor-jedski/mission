@@ -1,5 +1,6 @@
 import { cookies } from "next/headers";
 import { PlayerHome } from "@/components/player/PlayerHome";
+import { IntroOverlay } from "@/components/player/IntroOverlay";
 import {
   parseTeamSession,
   TEAM_SESSION_COOKIE
@@ -17,5 +18,10 @@ export default async function Home() {
       ? await getRuntimeRepository().getTeam(sessionResult.session.teamId)
       : null;
 
-  return <PlayerHome teamName={team?.name} />;
+  return (
+    <>
+      <IntroOverlay />
+      <PlayerHome teamName={team?.name} />
+    </>
+  );
 }

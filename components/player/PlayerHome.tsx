@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { PL_DICTIONARY } from "@/lib/player/copy-dictionary";
+import { EffectSettings } from "@/components/player/EffectSettings";
 
 type PlayerHomeProps = {
   teamName?: string;
 };
 
-export function PlayerHome({ teamName }: PlayerHomeProps) {
+export default function PlayerHomeComponent({ teamName }: PlayerHomeProps) {
   return (
     <main className="page-shell">
       <div style={{ textAlign: "center", marginBottom: "2rem" }}>
@@ -31,6 +32,12 @@ export function PlayerHome({ teamName }: PlayerHomeProps) {
           </Link>
         </div>
       )}
+
+      <div style={{ marginTop: "3rem" }}>
+        <EffectSettings />
+      </div>
     </main>
   );
 }
+
+export { PlayerHomeComponent as PlayerHome };

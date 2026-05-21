@@ -14,6 +14,20 @@ export const PL_DICTIONARY = {
     adminLogout: "Wyloguj admina",
   },
 
+  // Settings & Effects
+  settings: {
+    animationToggle: "Animacje",
+    soundToggle: "Dźwięk",
+  },
+
+  // Intro
+  intro: {
+    title: "Rozdział 1",
+    message: "Wkraczasz do świata pełnego tajemnic. Rozwiąż zagadki, otwórz pradawne zamki i znajdź drogę do legendarnego skarbu.",
+    skipButton: "Pomiń wstęp",
+    continueButton: "Rozpocznij misję",
+  },
+
   // Player Home
   home: {
     title: "Mission Treasure Hunt",
