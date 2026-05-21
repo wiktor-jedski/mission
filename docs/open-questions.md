@@ -56,3 +56,13 @@
 ## Remaining Clarifications
 
 None currently blocking requirements.
+
+## Project Owner Actions
+
+### Dependency Security Follow-Up
+
+- `npm audit --omit=dev` reports 2 moderate vulnerabilities through the current `next`/`postcss` dependency chain.
+- npm's automatic force fix proposes a breaking downgrade to Next 9, so it was not applied.
+- Before deployment, decide whether to accept this Phase 0 scaffold risk temporarily or move to a patched Next/PostCSS release when one is available through the normal dependency range.
+
+Decision: this is an app for a private party, we can accept that 

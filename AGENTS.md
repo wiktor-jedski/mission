@@ -8,7 +8,7 @@ When implementation starts, use the planned Next.js structure: application code 
 
 ## Build, Test, and Development Commands
 
-No package manifest exists yet. Once the Next.js scaffold is added, define these scripts:
+The Next.js scaffold exists. Use these scripts from the repository root:
 
 - `npm run dev` - start the local development server.
 - `npm run build` - typecheck and build the production app.
@@ -34,3 +34,5 @@ There is no commit history yet, so no existing convention can be inferred. Use c
 ## Security & Configuration Tips
 
 Do not commit secrets. Store Supabase URL/key, team PINs, admin password, and app base URL in environment variables. The app must store proof as links/text only; do not add direct media uploads unless the requirements change.
+
+Current dependency security decision: `npm audit --omit=dev` reports moderate vulnerabilities through the current `next`/`postcss` dependency chain. For this one-off private party app, the project owner accepted the risk rather than using `npm audit fix --force`, because the force fix proposes a breaking downgrade to Next 9. Do not spend implementation time forcing that downgrade. Keep the app away from the vulnerable usage pattern: do not add features that accept user-controlled CSS, raw HTML, theme snippets, arbitrary style content, or user content that is transformed into CSS and embedded in `<style>` tags.
