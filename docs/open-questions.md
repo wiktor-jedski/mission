@@ -54,6 +54,8 @@
 - The operator fallback will live on the organizer's laptop.
 - Phase 1 seed team names, PIN hashes, quest titles, quest instructions, hints, and safety copy are implementation placeholders until final event content is supplied.
 - The 25 Phase 1 quest slugs are stable and unguessable enough for QR generation, but they should not be printed until the final quest copy is accepted.
+- Phase 2 uses local fallback player PINs `1111` for `team-ember` and `2222` for `team-iron` when `TEAM_PINS` is not configured. Production should set `TEAM_PINS` explicitly.
+- Phase 2 player data access is implemented behind a replaceable local repository over Phase 1 seed data until Supabase-backed runtime persistence is wired into a later phase.
 
 ## Remaining Clarifications
 
@@ -73,3 +75,8 @@ Decision: this is an app for a private party, we can accept that
 
 - Replace placeholder team PIN hashes with real hashes before production seeding.
 - Review and replace placeholder quest copy before QR codes are generated.
+
+### Phase 2 Production Configuration
+
+- Set final `TEAM_PINS` before deployment, using entries that match seeded team IDs, for example `team-ember:real-pin,team-iron:real-pin`.
+- Decide whether Phase 3 should replace the Phase 2 local repository with Supabase-backed reads/writes before any public deployment smoke test.

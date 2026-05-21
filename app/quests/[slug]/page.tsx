@@ -1,0 +1,34 @@
+import { UnknownQuestView } from "@/components/player/UnknownQuestView";
+import { QuestPageView } from "@/components/player/QuestPageView";
+import { buildQuestViewModel } from "@/lib/player/view-models";
+import { getPlayerRepository } from "@/lib/player/store";
+import { requirePlayerTeam } from "@/app/player-session";
+
+type QuestPageProps = {
+  params: Promise<{ slug: string }>;
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function QuestPage({ params, searchParams }: QuestPageProps) {
+  const { slug } = await params;
+  const teamId = await requirePlayerTeam(`/quests/${slug}`);
+  const questAccess = getPlayerRepository().getQuestAccess(teamId, slug);
+
+  if (questAccess.status === "not_found") {
+    return <UnknownQuestView />;
+  }
+
+  const query = await searchParams;
+  const error = query?.error === "invalid" ? "Sprawdz dane i sproboj ponownie." : undefined;
+
+  return (
+    <QuestPageView
+      quest={buildQuestViewModel(
+        questAccess.quest,
+        questAccess.progress,
+        questAccess.submissions
+      )}
+      error={error}
+    />
+  );
+}

@@ -32,8 +32,10 @@ Copy `.env.example` to a local `.env` file and replace placeholders with real va
 
 - `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL.
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase public anon key.
-- `TEAM_PINS` - comma-separated team PIN configuration.
+- `TEAM_PINS` - comma-separated team PIN configuration, for example `team-ember:1111,team-iron:2222`.
 - `ADMIN_PASSWORD` - admin password.
 - `APP_BASE_URL` - public or local app base URL.
 
 Do not commit `.env` files or real secrets.
+
+When `TEAM_PINS` is absent in local development, Phase 2 falls back to `1111` for `team-ember` and `2222` for `team-iron`.

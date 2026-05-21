@@ -20,6 +20,7 @@ export default defineConfig({
       include: ["app/page.tsx", "components/**/*.tsx", "lib/**/*.ts"],
       exclude: [
         "app/layout.tsx",
+        "lib/domain/types.ts",
         "lib/**/*.d.ts",
         "lib/**/index.ts",
         "tests/**",

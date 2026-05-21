@@ -1,0 +1,24 @@
+import Link from "next/link";
+
+type PlayerHomeProps = {
+  teamName?: string;
+};
+
+export function PlayerHome({ teamName }: PlayerHomeProps) {
+  return (
+    <main className="page-shell">
+      <h1>Mission Treasure Hunt</h1>
+      {teamName ? (
+        <>
+          <p>Jestes zalogowany jako {teamName}.</p>
+          <nav className="inline-nav" aria-label="Nawigacja gracza">
+            <Link href="/submissions">Zgloszenia</Link>
+            <Link href="/logout">Wyloguj</Link>
+          </nav>
+        </>
+      ) : (
+        <Link href="/login">Zaloguj druzyne</Link>
+      )}
+    </main>
+  );
+}

@@ -19,3 +19,54 @@ body {
 a {
   color: inherit;
 }
+
+.page-shell {
+  margin: 0 auto;
+  max-width: 44rem;
+  padding: 2rem 1rem;
+}
+
+.stacked-form {
+  display: grid;
+  gap: 0.75rem;
+  max-width: 32rem;
+}
+
+.stacked-form input,
+.stacked-form textarea,
+.stacked-form button {
+  min-height: 2.75rem;
+  padding: 0.65rem 0.75rem;
+  font: inherit;
+}
+
+.stacked-form textarea {
+  min-height: 7rem;
+}
+
+.inline-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.eyebrow {
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.status-list {
+  display: grid;
+  gap: 1rem;
+  padding: 0;
+}
+
+.status-list li {
+  border: 1px solid #c9c3b8;
+  display: grid;
+  gap: 0.35rem;
+  list-style: none;
+  padding: 1rem;
+}
