@@ -4,7 +4,7 @@ import {
   parseTeamSession,
   TEAM_SESSION_COOKIE
 } from "@/lib/player/session";
-import { getPlayerRepository } from "@/lib/player/store";
+import { getRuntimeRepository } from "@/lib/runtime";
 
 export default async function Home() {
   const cookieStore = await cookies();
@@ -14,7 +14,7 @@ export default async function Home() {
   );
   const team =
     sessionResult.status === "authenticated"
-      ? getPlayerRepository().getTeam(sessionResult.session.teamId)
+      ? await getRuntimeRepository().getTeam(sessionResult.session.teamId)
       : null;
 
   return <PlayerHome teamName={team?.name} />;

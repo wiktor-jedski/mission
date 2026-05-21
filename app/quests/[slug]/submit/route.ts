@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { requirePlayerTeam } from "@/app/player-session";
 import { validateSubmissionForm } from "@/lib/player/submission-form";
-import { getPlayerRepository } from "@/lib/player/store";
+import { getRuntimeRepository } from "@/lib/runtime";
 
 type RouteContext = {
   params: Promise<{ slug: string }>;
@@ -10,8 +10,8 @@ type RouteContext = {
 export async function POST(request: Request, context: RouteContext) {
   const { slug } = await context.params;
   const teamId = await requirePlayerTeam(`/quests/${slug}`);
-  const repository = getPlayerRepository();
-  const questAccess = repository.getQuestAccess(teamId, slug);
+  const repository = getRuntimeRepository();
+  const questAccess = await repository.getQuestAccess(teamId, slug);
 
   if (questAccess.status === "not_found") {
     redirect(`/quests/${slug}`);
@@ -31,7 +31,7 @@ export async function POST(request: Request, context: RouteContext) {
     redirect(`/quests/${slug}?error=invalid`);
   }
 
-  const result = repository.submitProof({
+  const result = await repository.submitProof({
     teamId,
     questSlug: slug,
     contributorName: validation.data.contributorName,

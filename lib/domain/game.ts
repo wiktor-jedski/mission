@@ -148,6 +148,10 @@ export const rejectSubmission = (
   reviewedAt: string,
   rejectionMessage?: string | null
 ): { submission: Submission; progress: TeamQuestProgress } => {
+  if (submission.status !== "pending") {
+    throw new Error("Only pending submissions can be rejected.");
+  }
+
   if (!isRejectionReason(reason)) {
     throw new Error("Rejection reason is invalid.");
   }
@@ -178,6 +182,18 @@ export const approveSubmission = (
   progress: TeamQuestProgress;
   newlyApproved: boolean;
 } => {
+  if (submission.status === "approved") {
+    return {
+      submission,
+      progress,
+      newlyApproved: false
+    };
+  }
+
+  if (submission.status !== "pending") {
+    throw new Error("Only pending submissions can be approved.");
+  }
+
   const newlyApproved = progress.status !== "approved";
 
   return {

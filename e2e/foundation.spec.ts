@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("player can log in, submit proof, and remain team-scoped", async ({ page }) => {
+test("player can submit proof, admin can approve it, and map progress refreshes", async ({ page }) => {
   await page.goto("/");
 
   await expect(
@@ -23,6 +23,18 @@ test("player can log in, submit proof, and remain team-scoped", async ({ page })
   await page.goto("/submissions");
   await expect(page.getByText("Pieczec Bursztynu")).toBeVisible();
   await expect(page.getByText("https://example.com/photo")).toHaveCount(0);
+
+  await page.goto("/admin");
+  await page.getByLabel("Haslo admina").fill("admin-password");
+  await page.getByRole("button", { name: "Zaloguj" }).click();
+  await expect(page.getByRole("heading", { name: "Zgloszenia do sprawdzenia" })).toBeVisible();
+  await expect(page.getByText("https://example.com/photo")).toHaveCount(0);
+  await page.getByRole("button", { name: "Zatwierdz" }).click();
+  await expect(page.getByText("Brak zgloszen oczekujacych.")).toBeVisible();
+
+  await page.goto("/map");
+  await expect(page.getByRole("status")).toContainText("1/21");
+  await expect(page.getByText("Finalny skarb jest jeszcze zablokowany.")).toBeVisible();
 
   await page.goto("/logout");
   await page.getByLabel("PIN druzyny").fill("2222");

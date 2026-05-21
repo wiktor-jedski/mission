@@ -177,5 +177,7 @@ export type Database = {
         Update: Partial<Database["public"]["Tables"]["teams"]["Insert"]>;
       };
     };
+    Views: Record<string, never>;
+    Functions: Record<string, never>;
   };
 };

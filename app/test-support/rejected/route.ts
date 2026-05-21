@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getPlayerRepository } from "@/lib/player/store";
+import { getRuntimeRepository } from "@/lib/runtime";
 
 export async function POST(request: Request) {
   if (process.env.NODE_ENV === "production") {
@@ -15,12 +15,26 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "invalid" }, { status: 400 });
   }
 
-  const submission = getPlayerRepository().seedRejectedSubmission(
-    body.teamId,
-    body.questSlug
-  );
+  const repository = getRuntimeRepository();
+  const created = await repository.submitProof({
+    teamId: body.teamId,
+    questSlug: body.questSlug,
+    contributorName: "Test",
+    proofValue: "https://example.com/stary-dowod",
+    note: null
+  });
 
-  return submission
+  if (created.status !== "created") {
+    return NextResponse.json({ error: "not_found" }, { status: 404 });
+  }
+
+  const rejected = await repository.rejectSubmission({
+    submissionId: created.submission.id,
+    reason: "wrong_proof",
+    message: "Poprawcie dowod i wyslijcie ponownie."
+  });
+
+  return rejected.status === "updated"
     ? NextResponse.json({ ok: true })
     : NextResponse.json({ error: "not_found" }, { status: 404 });
 }

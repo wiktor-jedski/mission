@@ -60,8 +60,8 @@
 - The operator fallback will live on the organizer's laptop.
 - Phase 1 seed team names, PIN hashes, quest titles, quest instructions, hints, and safety copy are implementation placeholders until final event content is supplied.
 - The 25 Phase 1 quest slugs are stable and unguessable enough for QR generation, but they should not be printed until the final quest copy is accepted.
-- Phase 2 uses local fallback player PINs `1111` for `team-ember` and `2222` for `team-iron` when `TEAM_PINS` is not configured. Production should set `TEAM_PINS` explicitly.
-- Phase 2 player data access is implemented behind a replaceable local repository over Phase 1 seed data until Supabase-backed runtime persistence is wired into a later phase.
+- Local development and automated tests may use fallback player PINs `1111` for `team-ember` and `2222` for `team-iron` when `TEAM_PINS` is not configured. Production should set `TEAM_PINS` explicitly.
+- Phase 3 runtime routes use the runtime repository boundary. Supabase is the required source of truth for deployed gameplay; the local repository path remains only for local development and tests when Supabase URL/key are absent.
 
 ## Remaining Clarifications
 
@@ -85,3 +85,14 @@ Decision: this is an app for a private party, we can accept that
 ### Phase 2 Production Configuration
 
 - Set final `TEAM_PINS` before deployment, using entries that match seeded team IDs, for example `team-ember:real-pin,team-iron:real-pin`.
+
+### Phase 3 Supabase Smoke Configuration
+
+- Configure `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `TEAM_PINS`, `ADMIN_PASSWORD`, and `APP_BASE_URL` before any public deployment smoke test.
+- Apply both Supabase migrations and the Phase 1 seed before a public deployment smoke test.
+- Public/deployed gameplay must not use local process-memory fallback state.
+
+### Final Prize Photo Asset
+
+- Add the event's final prize photo as `public/final-prize-photo.jpg` before the event.
+- The `/map` page links to that file only after the current team reaches 21 approved quests.

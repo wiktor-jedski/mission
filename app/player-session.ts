@@ -1,28 +1,35 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { getPlayerRepository } from "@/lib/player/store";
 import {
   parseTeamSession,
   TEAM_SESSION_COOKIE
 } from "@/lib/player/session";
-import { resolvePlayerAccess } from "@/lib/player/auth-guard";
+import { getRuntimeRepository } from "@/lib/runtime";
 
 export async function requirePlayerTeam(currentPath: string): Promise<string> {
   const cookieStore = await cookies();
-  const repository = getPlayerRepository();
+  const repository = getRuntimeRepository();
   const sessionResult = parseTeamSession(
     cookieStore.get(TEAM_SESSION_COOKIE)?.value,
     Date.now()
   );
-  const access = resolvePlayerAccess(
-    sessionResult,
-    (teamId) => repository.getTeam(teamId) !== null,
-    currentPath
-  );
-
-  if (access.status === "redirect") {
-    redirect(access.destination);
+  if (sessionResult.status !== "authenticated") {
+    redirect(loginDestination(currentPath));
   }
 
-  return access.teamId;
+  const team = await repository.getTeam(sessionResult.session.teamId);
+
+  if (!team) {
+    redirect(loginDestination(currentPath));
+  }
+
+  return sessionResult.session.teamId;
 }
+
+const loginDestination = (currentPath: string): string => {
+  const safePath = currentPath.startsWith("/") && !currentPath.startsWith("//")
+    ? currentPath
+    : "/";
+
+  return `/login?next=${encodeURIComponent(safePath)}`;
+};

@@ -1,7 +1,7 @@
 import { UnknownQuestView } from "@/components/player/UnknownQuestView";
 import { QuestPageView } from "@/components/player/QuestPageView";
 import { buildQuestViewModel } from "@/lib/player/view-models";
-import { getPlayerRepository } from "@/lib/player/store";
+import { getRuntimeRepository } from "@/lib/runtime";
 import { requirePlayerTeam } from "@/app/player-session";
 
 type QuestPageProps = {
@@ -12,7 +12,7 @@ type QuestPageProps = {
 export default async function QuestPage({ params, searchParams }: QuestPageProps) {
   const { slug } = await params;
   const teamId = await requirePlayerTeam(`/quests/${slug}`);
-  const questAccess = getPlayerRepository().getQuestAccess(teamId, slug);
+  const questAccess = await getRuntimeRepository().getQuestAccess(teamId, slug);
 
   if (questAccess.status === "not_found") {
     return <UnknownQuestView />;

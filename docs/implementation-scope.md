@@ -27,16 +27,13 @@
 - Submission detail view.
 - Approve submission.
 - Reject submission with reason/message.
-- Manual map progress override.
-
-### Phase 4 - Reveal Flow
-
-- Fixed-order fragment reveal.
-- Persist revealed fragments per team.
 - Show full map after 21 approved quests for a team.
 - Unlock final prize photo.
+- Persist player submissions, review actions, team quest progress, map progress, final unlock state, and audit events through Supabase.
 
-### Phase 5 - Deployment And QR Codes
+Phase 3 does not include deployment, QR export, hints UI, polling, audit-log UI, manual overrides, pause/resume controls, animations, sound, or visual polish.
+
+### Phase 4 - Deployment And QR Codes
 
 - Deploy to public HTTPS URL.
 - Test on laptop.
@@ -46,12 +43,13 @@
 - Print QR codes.
 - Hide QR codes in the house.
 
-### Phase 6 - Time-Permitting Polish
+### Phase 5 - Time-Permitting Polish
 
 - Basic fantasy styling.
 - Audit log view.
 - Hint button and hint usage tracking.
 - Admin polling for new submissions.
+- Manual map progress override.
 - Reveal animation.
 - Obelisk sound.
 - Intro screen.
@@ -138,8 +136,6 @@
 - `/admin/login`
 - `/admin`
 - `/admin/submissions/[id]`
-- `/admin/teams/[id]`
-- `/admin/audit`
 
 ## Priority Rule
 

@@ -12,6 +12,7 @@ export function PlayerHome({ teamName }: PlayerHomeProps) {
         <>
           <p>Jestes zalogowany jako {teamName}.</p>
           <nav className="inline-nav" aria-label="Nawigacja gracza">
+            <Link href="/map">Mapa</Link>
             <Link href="/submissions">Zgloszenia</Link>
             <Link href="/logout">Wyloguj</Link>
           </nav>

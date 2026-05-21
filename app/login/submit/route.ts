@@ -8,16 +8,16 @@ import {
   TEAM_SESSION_COOKIE,
   TEAM_SESSION_MAX_AGE_SECONDS
 } from "@/lib/player/session";
-import { getPlayerRepository } from "@/lib/player/store";
+import { getRuntimeRepository } from "@/lib/runtime";
 
 export async function POST(request: Request) {
   const formData = await request.formData();
   const pin = stringValue(formData.get("pin"));
   const nextPath = normalizePlayerRedirect(stringValue(formData.get("next")), "/");
-  const repository = getPlayerRepository();
+  const repository = getRuntimeRepository();
   const verification = verifyTeamPin(
     pin,
-    repository.getTeams(),
+    await repository.getTeams(),
     getConfiguredTeamPins()
   );
 

@@ -313,6 +313,14 @@ describe("submission transitions", () => {
         later
       )
     ).toThrow("Rejection reason is invalid.");
+    expect(() =>
+      rejectSubmission(
+        submission({ status: "approved" }),
+        progress({ status: "approved" }),
+        "other",
+        later
+      )
+    ).toThrow("Only pending submissions can be rejected.");
   });
 
   it("approves submissions idempotently", () => {
@@ -346,6 +354,13 @@ describe("submission transitions", () => {
       later
     );
     expect(afterResubmission.newlyApproved).toBe(true);
+    expect(() =>
+      approveSubmission(
+        submission({ status: "rejected" }),
+        progress({ status: "rejected" }),
+        later
+      )
+    ).toThrow("Only pending submissions can be approved.");
   });
 });
 
