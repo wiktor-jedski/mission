@@ -38,6 +38,12 @@
 - Push notifications are not required.
 - Manual refresh should not be the primary workflow if polling can be implemented quickly.
 
+### Phase 3 Runtime Persistence
+
+- Decision: Phase 3 must replace the Phase 2 local repository runtime path with Supabase-backed reads/writes before any public deployment smoke test.
+- The local repository may remain for unit tests or explicit local fallback, but deployed gameplay must use Supabase as the source of truth.
+- Supabase-backed runtime persistence must cover player submissions, admin pending review, approval, rejection, team quest progress, map progress, final unlock state, and audit writes.
+
 ## Current Assumptions
 
 - The app will be hosted publicly with HTTPS.
@@ -79,4 +85,3 @@ Decision: this is an app for a private party, we can accept that
 ### Phase 2 Production Configuration
 
 - Set final `TEAM_PINS` before deployment, using entries that match seeded team IDs, for example `team-ember:real-pin,team-iron:real-pin`.
-- Decide whether Phase 3 should replace the Phase 2 local repository with Supabase-backed reads/writes before any public deployment smoke test.
