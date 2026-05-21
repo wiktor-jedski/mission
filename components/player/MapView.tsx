@@ -62,7 +62,9 @@ export function MapView({ map }: MapViewProps) {
   const fragments = Array.from({ length: totalFragments }, (_, i) => i + 1);
 
   // The number we show as 'statically' revealed depends on animation state
-  const isComplete = animState === "completed" && map.isFinalUnlocked;
+  const isRevealing = animState === "playing" && preferences.animationsEnabled;
+  const canShowPrize = map.isFinalUnlocked && !isRevealing;
+  const isComplete = canShowPrize;
   
   return (
     <main className={`page-shell ${isComplete && preferences.animationsEnabled ? "map-complete-effect" : ""}`}>
@@ -127,7 +129,7 @@ export function MapView({ map }: MapViewProps) {
       </div>
 
       <div style={{ marginTop: "2rem" }}>
-        {map.isFinalUnlocked && (animState === "completed" || !preferences.animationsEnabled) ? (
+        {canShowPrize ? (
           <section aria-labelledby="final-prize-heading" className="panel-rugged final-prize-panel" style={{ border: "2px solid var(--border-glow)" }}>
             <h2 id="final-prize-heading" style={{ color: "var(--text-gold)" }}>
               {PL_DICTIONARY.map.finalPrizeHeading}

@@ -466,6 +466,33 @@ describe("phase 3 components", () => {
     expect(screen.getByRole("status")).toHaveTextContent("5 / 21");
   });
 
+  it("shows the prize link on initial load when enough quests are complete", async () => {
+    const prefsMod = await import("@/lib/player/preferences");
+    vi.spyOn(prefsMod, "useEffectsPreferences").mockReturnValue({
+      preferences: { animationsEnabled: true, soundEnabled: false, introSkipped: true },
+      loaded: true,
+      updatePreference: vi.fn(),
+    });
+
+    render(
+      <MapView
+        map={{
+          approvedQuestCount: 21,
+          revealedFragmentCount: 21,
+          requiredApprovalCount: 21,
+          isFinalUnlocked: true
+        }}
+      />
+    );
+
+    expect(
+      screen.getByRole("link", { name: "Otwórz zdjęcie finalnej nagrody" })
+    ).toHaveAttribute("href", "/final-prize-photo.jpg");
+    expect(
+      screen.queryByText("Finalny skarb pozostaje zablokowany. Zdobądź 21 zatwierdzonych misji, aby go odkryć!")
+    ).not.toBeInTheDocument();
+  });
+
   it("animates newly unlocked map fragments", async () => {
     const prefsMod = await import("@/lib/player/preferences");
     vi.spyOn(prefsMod, "useEffectsPreferences").mockReturnValue({
