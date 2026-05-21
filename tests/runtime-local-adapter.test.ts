@@ -1,4 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
+import {
+  createRuntimeRepository,
+  setRuntimeRepositoryForTests
+} from "@/lib/runtime";
 import { LocalRuntimeRepository } from "@/lib/runtime/local-adapter";
 import { createInitialSnapshot } from "@/lib/player/store";
 
@@ -6,6 +10,39 @@ const firstSlug = "amber-vault-k9q4m2x7";
 const secondSlug = "silent-forge-p6t8n3v1";
 
 describe("LocalRuntimeRepository", () => {
+  it("can be selected explicitly for deterministic development smoke tests", () => {
+    const previousOverride = process.env.MISSION_RUNTIME_REPOSITORY;
+    process.env.MISSION_RUNTIME_REPOSITORY = "local";
+    setRuntimeRepositoryForTests(undefined);
+
+    expect(createRuntimeRepository()).toBeInstanceOf(LocalRuntimeRepository);
+
+    if (previousOverride === undefined) {
+      delete process.env.MISSION_RUNTIME_REPOSITORY;
+    } else {
+      process.env.MISSION_RUNTIME_REPOSITORY = previousOverride;
+    }
+    setRuntimeRepositoryForTests(undefined);
+  });
+
+  it("rejects the explicit local runtime override in production", () => {
+    const previousOverride = process.env.MISSION_RUNTIME_REPOSITORY;
+    process.env.MISSION_RUNTIME_REPOSITORY = "local";
+    vi.stubEnv("NODE_ENV", "production");
+
+    expect(() => createRuntimeRepository()).toThrow(
+      "Local runtime repository is not allowed in production."
+    );
+
+    vi.unstubAllEnvs();
+    if (previousOverride === undefined) {
+      delete process.env.MISSION_RUNTIME_REPOSITORY;
+    } else {
+      process.env.MISSION_RUNTIME_REPOSITORY = previousOverride;
+    }
+    setRuntimeRepositoryForTests(undefined);
+  });
+
   it("supports team, quest, submission, pending review, approval, and map reads", async () => {
     const repository = new LocalRuntimeRepository();
 

@@ -60,4 +60,4 @@ export const verifyTeamPin = (
 };
 
 export const getConfiguredTeamPins = (): readonly TeamPinRecord[] =>
-  parseTeamPins(process.env.TEAM_PINS);
+  parseTeamPins(process.env.MISSION_TEST_TEAM_PINS ?? process.env.TEAM_PINS);

@@ -19,6 +19,14 @@ export const setRuntimeRepositoryForTests = (
 };
 
 export const createRuntimeRepository = (): RuntimeRepository => {
+  if (process.env.MISSION_RUNTIME_REPOSITORY === "local") {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("Local runtime repository is not allowed in production.");
+    }
+
+    return new LocalRuntimeRepository();
+  }
+
   const hasSupabaseEnv =
     Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL?.trim()) &&
     Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim());

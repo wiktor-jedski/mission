@@ -29,6 +29,7 @@ Available commands:
 - `npm test` - run Vitest unit/integration tests.
 - `npm run test:e2e` - run the Playwright smoke test against the local app.
 - `npm run coverage` - run Vitest with V8 coverage and enforce 100% statements, branches, and functions for committed application code.
+- `APP_BASE_URL=https://your-game.vercel.app npm run export:quest-urls` - export the 25 quest URLs as CSV for QR generation.
 
 ## Environment
 
@@ -43,6 +44,10 @@ Copy `.env.example` to a local `.env` file and replace placeholders with real va
 Do not commit `.env` files or real secrets.
 
 When `TEAM_PINS` is absent in local development, the app falls back to `1111` for `team-ember` and `2222` for `team-iron`. When Supabase URL/key are absent in local development and tests, the runtime uses the explicit local fallback repository. Production builds and deployed gameplay must configure Supabase URL/key; missing Supabase runtime persistence fails instead of using process memory.
+
+## Phase 4 Boundary
+
+Phase 4 covers MVP deployment readiness only: public HTTPS deployment, production Supabase configuration, final URL stability, quest URL export for QR generation, production smoke checks on iPhone/Android/admin laptop, local fallback assets, and quality gates. Hints, polling, audit-log UI, manual overrides, pause/resume, animation, sound, and dedicated visual polish remain out of scope.
 
 ## Deployment
 
@@ -104,14 +109,17 @@ Before public deployment, make sure you replace `public/final-prize-photo.jpg` w
 ### 4. QR Code Generation
 
 The game leverages unguessable 8-character suffix slugs for quests to prevent players from guessing next-stage URLs (e.g. `/quests/amber-vault-k9q4m2x7`).
-1. Extract all active quest slugs from [phase1_seed.sql](file:///home/wiktor/Work/mission/supabase/seeds/phase1_seed.sql) or by running a SQL query in Supabase:
+1. Set `APP_BASE_URL` to the final public production URL, then export the quest list:
+   ```bash
+   APP_BASE_URL=https://your-game.vercel.app npm run export:quest-urls
+   ```
+2. Confirm the export contains exactly 25 rows, all with the final public base URL and no localhost or preview URL.
+3. As a production cross-check, compare the export against Supabase:
    ```sql
    select id, title, slug from public.quests where is_active = true;
    ```
-2. Construct the full URL for each quest:
-   `https://<your-vercel-domain>/quests/<slug>`
-3. Convert these URLs into QR Codes using a bulk generator (e.g. `qrcode` npm package or any online bulk generator tool).
-4. Print the QR codes and physically hide them at the appropriate locations corresponding to the quests.
+4. Convert the exported URLs into QR codes using the prepared files under `public/qr-codes/` or a trusted bulk generator.
+5. Verify every QR code resolves to the final production URL, then print and physically hide them at the appropriate locations.
 
 ---
 
@@ -152,3 +160,16 @@ Before the event begins, perform a dry-run check:
 ## Final Prize Photo
 
 Before the event, provide the final prize photo at `public/final-prize-photo.jpg`. The `/map` page only links to it after the current team reaches 21 approved quests.
+
+## Operator Fallback
+
+Keep the local `fallback/` folder on the event laptop before leaving:
+
+- `fallback/quests.md` - all 25 quest identifiers and fallback instructions.
+- `fallback/qr-mapping.md` - QR labels, slugs, and quest URLs; replace `https://mission.example` with the final production URL.
+- `fallback/team-progress.md` - manual tracker for approvals, rejections, and revealed fragments.
+- `fallback/final-prize-photo.jpg` - local copy of the final prize image.
+- `fallback/map-reveal-method.md` and `fallback/fragments/` - manual map reveal instructions and fragment location.
+- `fallback/admin-notes.md` - fallback operating procedure.
+
+Before the event, add the real full map image as `fallback/map-full.png` and either add `fragment-01.png` through `fragment-21.png` under `fallback/fragments/` or document the exact manual reveal method in `fallback/map-reveal-method.md`.

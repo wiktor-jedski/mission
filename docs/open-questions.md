@@ -65,7 +65,26 @@
 
 ## Remaining Clarifications
 
-None currently blocking requirements.
+### Phase 4 Final URL
+
+- Owner action: confirm the final public production URL that should be used for QR generation.
+- Current local export command is ready: `APP_BASE_URL=https://your-game.vercel.app npm run export:quest-urls`.
+- Do not print or hide QR codes until this URL is final.
+
+### Phase 4 Production Smoke Evidence
+
+- Owner action: run and record production smoke tests on iPhone, Android, and the admin laptop after the final Vercel deployment is live.
+- Required checks: team login, quest view from QR/URL, proof URL/text submission, map view, admin review, proof opening, approval, and player map update.
+- After smoke testing, reset or intentionally clean production state before the event.
+
+### Phase 4 Map Fallback Asset
+
+- Owner action: add the real full map image as `fallback/map-full.png`.
+- Owner action: add `fallback/fragments/fragment-01.png` through `fallback/fragments/fragment-21.png` or document the exact local reveal method in `fallback/map-reveal-method.md`.
+
+### Phase 4 QR Locations
+
+- Owner action: fill physical hiding locations in `fallback/qr-mapping.md` after QR codes are printed and placed.
 
 ## Project Owner Actions
 
@@ -86,13 +105,23 @@ Decision: this is an app for a private party, we can accept that
 
 - Set final `TEAM_PINS` before deployment, using entries that match seeded team IDs, for example `team-ember:real-pin,team-iron:real-pin`.
 
+Decision: completed
+
 ### Phase 3 Supabase Smoke Configuration
 
 - Configure `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `TEAM_PINS`, `ADMIN_PASSWORD`, and `APP_BASE_URL` before any public deployment smoke test.
+
+Decision: env vars are loaded in Vercel.
+
 - Apply both Supabase migrations and the Phase 1 seed before a public deployment smoke test.
+
+Decision: applied
+
 - Public/deployed gameplay must not use local process-memory fallback state.
 
 ### Final Prize Photo Asset
 
 - Add the event's final prize photo as `public/final-prize-photo.jpg` before the event.
 - The `/map` page links to that file only after the current team reaches 21 approved quests.
+
+Decision: completed

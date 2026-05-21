@@ -57,4 +57,25 @@ describe("team PIN helpers", () => {
       process.env.TEAM_PINS = originalTeamPins;
     }
   });
+
+  it("prefers explicit smoke-test PINs over production-like PINs", () => {
+    const originalTeamPins = process.env.TEAM_PINS;
+    const originalTestTeamPins = process.env.MISSION_TEST_TEAM_PINS;
+    process.env.TEAM_PINS = "team-ember:9999";
+    process.env.MISSION_TEST_TEAM_PINS = "team-ember:1111";
+
+    expect(getConfiguredTeamPins()).toEqual([{ teamId: "team-ember", pin: "1111" }]);
+
+    if (originalTeamPins === undefined) {
+      delete process.env.TEAM_PINS;
+    } else {
+      process.env.TEAM_PINS = originalTeamPins;
+    }
+
+    if (originalTestTeamPins === undefined) {
+      delete process.env.MISSION_TEST_TEAM_PINS;
+    } else {
+      process.env.MISSION_TEST_TEAM_PINS = originalTestTeamPins;
+    }
+  });
 });
