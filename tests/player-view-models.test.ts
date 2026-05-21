@@ -84,6 +84,7 @@ describe("player view models", () => {
     ).toEqual([
       {
         id: "pending",
+        questSlug: quest.slug,
         questTitle: quest.title,
         contributorName: "Ala",
         statusLabel: "Czeka na sprawdzenie",
@@ -91,6 +92,7 @@ describe("player view models", () => {
       },
       {
         id: "approved",
+        questSlug: quest.slug,
         questTitle: quest.title,
         contributorName: "Ala",
         statusLabel: "Zaakceptowane",
@@ -98,6 +100,7 @@ describe("player view models", () => {
       },
       {
         id: "rejected",
+        questSlug: quest.slug,
         questTitle: quest.title,
         contributorName: "Ala",
         statusLabel: "Odrzucone",
@@ -105,6 +108,7 @@ describe("player view models", () => {
       },
       {
         id: "unknown",
+        questSlug: null,
         questTitle: "Nieznana misja",
         contributorName: "Ala",
         statusLabel: "Czeka na sprawdzenie",

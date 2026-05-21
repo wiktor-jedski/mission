@@ -159,11 +159,13 @@ describe("player components", () => {
           submissionStatusView(),
           submissionStatusView({
             id: "submission-02",
+            questSlug: "diamond-seal-a1b2c3d4",
             statusLabel: "Odrzucone",
             rejectionMessage: "Jeszcze raz"
           }),
           submissionStatusView({
             id: "submission-03",
+            questSlug: "diamond-seal-a1b2c3d4",
             statusLabel: "Zaakceptowane",
             questTitle: "Pieczec Diamentu"
           })
@@ -176,6 +178,14 @@ describe("player components", () => {
     expect(screen.getByText("Zaakceptowane")).toBeInTheDocument();
     expect(screen.getAllByText("Ala")).toHaveLength(3);
     expect(screen.getByText("Jeszcze raz")).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: /Pieczec Bursztynu/ })[0]).toHaveAttribute(
+      "href",
+      "/quests/amber-seal-a1b2c3d4"
+    );
+    expect(screen.getByRole("link", { name: /Pieczec Diamentu/ })).toHaveAttribute(
+      "href",
+      "/quests/diamond-seal-a1b2c3d4"
+    );
   });
 
   it("renders the safe unknown quest state", () => {
@@ -658,6 +668,7 @@ const submissionStatusView = (
   overrides: Partial<SubmissionStatusView> = {}
 ): SubmissionStatusView => ({
   id: "submission-01",
+  questSlug: "amber-seal-a1b2c3d4",
   questTitle: "Pieczec Bursztynu",
   contributorName: "Ala",
   statusLabel: "Czeka na sprawdzenie",

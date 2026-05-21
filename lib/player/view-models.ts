@@ -18,6 +18,7 @@ export type QuestViewModel = {
 
 export type SubmissionStatusView = {
   id: string;
+  questSlug: string | null;
   questTitle: string;
   contributorName: string;
   statusLabel: string;
@@ -59,16 +60,19 @@ export const buildSubmissionStatusViews = (
   submissions: readonly Submission[],
   quests: readonly Quest[]
 ): readonly SubmissionStatusView[] =>
-  submissions.map((submission) => ({
-    id: submission.id,
-    questTitle:
-      quests.find((quest) => quest.id === submission.questId)?.title ??
-      "Nieznana misja",
-    contributorName: submission.contributorName,
-    statusLabel: submissionStatusLabel(submission.status),
-    rejectionMessage:
-      submission.status === "rejected" ? submission.rejectionMessage : null
-  }));
+  submissions.map((submission) => {
+    const quest = quests.find((questItem) => questItem.id === submission.questId);
+
+    return {
+      id: submission.id,
+      questSlug: quest?.slug ?? null,
+      questTitle: quest?.title ?? "Nieznana misja",
+      contributorName: submission.contributorName,
+      statusLabel: submissionStatusLabel(submission.status),
+      rejectionMessage:
+        submission.status === "rejected" ? submission.rejectionMessage : null
+    };
+  });
 
 const statusMessage = (
   progress: TeamQuestProgress,

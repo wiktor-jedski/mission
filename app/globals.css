@@ -261,6 +261,18 @@ button:disabled {
   border-color: var(--border-glow);
 }
 
+.status-list li.submission-list-item {
+  padding: 0;
+}
+
+.submission-list-link {
+  color: inherit;
+  display: grid;
+  gap: 0.75rem;
+  padding: 1.5rem;
+  text-decoration: none;
+}
+
 /* Custom Status Badges & Alerts */
 [role="status"],
 .badge-status {
