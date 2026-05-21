@@ -10,7 +10,7 @@ Manual loop:
 4. Approve or reject manually.
 5. Update `team-progress.md`.
 6. Reveal the next fragment from `fragments/` or the manual reveal method.
-7. At 21 approvals, show `final-prize-photo.jpg`.
+7. At 16 approvals, show `final-prize-photo.jpg`.
 
 Before the event:
 

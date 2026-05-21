@@ -1,6 +1,6 @@
 export const TEAM_COUNT = 2;
 export const QUEST_COUNT = 21;
-export const REQUIRED_APPROVAL_COUNT = 21;
+export const REQUIRED_APPROVAL_COUNT = 16;
 
 export const SUBMISSION_STATUSES = [
   "pending",

@@ -70,7 +70,7 @@ export const PL_DICTIONARY = {
     progressLabel: "Odkryte fragmenty mapy",
     finalPrizeHeading: "Legendarny Skarb",
     openPrizeButton: "Otwórz zdjęcie finalnej nagrody",
-    lockedMessage: "Finalny skarb pozostaje zablokowany. Zdobądź 21 zatwierdzonych misji, aby go odkryć!",
+    lockedMessage: "Finalny skarb pozostaje zablokowany. Zdobądź 16 zatwierdzonych misji, aby go odkryć!",
   },
 
   // Admin UI

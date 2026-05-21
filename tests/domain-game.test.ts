@@ -82,7 +82,7 @@ describe("calculateMapProgress", () => {
     expect(calculateMapProgress([])).toEqual({
       approvedQuestCount: 0,
       revealedFragmentCount: 0,
-      requiredApprovalCount: 21,
+      requiredApprovalCount: 16,
       isFinalUnlocked: false
     });
 
@@ -98,7 +98,7 @@ describe("calculateMapProgress", () => {
 
     expect(
       calculateMapProgress(
-        Array.from({ length: 21 }, (_, index) =>
+        Array.from({ length: 16 }, (_, index) =>
           progress({ id: `approved-${index}`, status: "approved" })
         )
       ).isFinalUnlocked
@@ -112,7 +112,7 @@ describe("calculateMapProgress", () => {
       )
     ).toMatchObject({
       approvedQuestCount: 22,
-      revealedFragmentCount: 21,
+      revealedFragmentCount: 16,
       isFinalUnlocked: true
     });
 
@@ -470,8 +470,8 @@ describe("phase 5 domain helpers", () => {
   });
 
   it("updates manual fragment counts with bounds", () => {
-    expect(revealManualFragment(team({ mapProgressCount: 20 })).mapProgressCount).toBe(21);
-    expect(revealManualFragment(team({ mapProgressCount: 21 })).mapProgressCount).toBe(21);
+    expect(revealManualFragment(team({ mapProgressCount: 15 })).mapProgressCount).toBe(16);
+    expect(revealManualFragment(team({ mapProgressCount: 16 })).mapProgressCount).toBe(16);
     expect(hideManualFragment(team({ mapProgressCount: 1 })).mapProgressCount).toBe(0);
     expect(hideManualFragment(team({ mapProgressCount: 0 })).mapProgressCount).toBe(0);
   });
@@ -494,7 +494,7 @@ describe("phase 5 domain helpers", () => {
     );
     expect(overridden).toMatchObject({
       newlyApproved: true,
-      team: { mapProgressCount: 21, completedQuestCount: 21 },
+      team: { mapProgressCount: 16, completedQuestCount: 21 },
       progress: { status: "approved", approvedAt: later, skippedAt: null }
     });
     expect(

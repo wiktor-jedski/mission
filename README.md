@@ -11,7 +11,7 @@ Next.js implementation and documentation for a one-off bachelor party QR quest g
 
 ## Phase 3 Boundary
 
-Phase 3 implements the core runtime loop only: Supabase-backed player submissions, admin password login, pending review, approve/reject actions, rejection messages, per-team map progress, 21-approval full-map unlock, and final prize photo access. Deployment work, QR export, hints UI, polling, audit-log UI, manual overrides, pause/resume controls, animations, sound, and visual polish remain out of scope.
+Phase 3 implements the core runtime loop only: Supabase-backed player submissions, admin password login, pending review, approve/reject actions, rejection messages, per-team map progress, 16-approval full-map unlock, and final prize photo access. Deployment work, QR export, hints UI, polling, audit-log UI, manual overrides, pause/resume controls, animations, sound, and visual polish remain out of scope.
 
 ## Development
 
@@ -101,7 +101,7 @@ Follow this guide to deploy the application for the live event.
 
 ### 3. Static Asset Check (Final Prize)
 
-Before public deployment, make sure you replace `public/final-prize-photo.jpg` with the actual high-quality final prize photo or image that will be unlocked when a team hits 21 approved quests.
+Before public deployment, make sure you replace `public/final-prize-photo.jpg` with the actual high-quality final prize photo or image that will be unlocked when a team hits 16 approved quests.
 - If you change this image, commit and push it to redeploy the app.
 
 ---
@@ -159,7 +159,7 @@ Before the event begins, perform a dry-run check:
 
 ## Final Prize Photo
 
-Before the event, provide the final prize photo at `public/final-prize-photo.jpg`. The `/map` page only links to it after the current team reaches 21 approved quests.
+Before the event, provide the final prize photo at `public/final-prize-photo.jpg`. The `/map` page only links to it after the current team reaches 16 approved quests.
 
 ## Operator Fallback
 

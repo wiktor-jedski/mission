@@ -159,7 +159,7 @@ Not allowed:
 - Map progress is linear per team.
 - Quest order does not determine which map fragment is revealed.
 - Any approved quest reveals the next unrevealed fragment in a fixed order.
-- The map is fully revealed after 21 approved quests for that team.
+- The map is fully revealed after 16 approved quests for that team.
 
 ### 6.2 Fragment Rules
 
@@ -293,7 +293,7 @@ The minimum version that still delivers the game must include:
 - approve/reject flow
 - rejection message
 - per-team map progress
-- full map reveal after 21 approved quests
+- full map reveal after 16 approved quests
 - fixed-order map reveal
 - final prize photo unlock
 - public HTTPS deployment

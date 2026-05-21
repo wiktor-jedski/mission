@@ -431,23 +431,23 @@ describe("phase 3 components", () => {
     const { rerender } = render(
       <MapView
         map={{
-          approvedQuestCount: 20,
-          revealedFragmentCount: 20,
-          requiredApprovalCount: 21,
+          approvedQuestCount: 15,
+          revealedFragmentCount: 15,
+          requiredApprovalCount: 16,
           isFinalUnlocked: false
         }}
       />
     );
 
-    expect(screen.getByRole("status")).toHaveTextContent("20 / 21");
-    expect(screen.getByText("Finalny skarb pozostaje zablokowany. Zdobądź 21 zatwierdzonych misji, aby go odkryć!")).toBeInTheDocument();
+    expect(screen.getByRole("status")).toHaveTextContent("15 / 16");
+    expect(screen.getByText("Finalny skarb pozostaje zablokowany. Zdobądź 16 zatwierdzonych misji, aby go odkryć!")).toBeInTheDocument();
 
     rerender(
       <MapView
         map={{
-          approvedQuestCount: 21,
-          revealedFragmentCount: 21,
-          requiredApprovalCount: 21,
+          approvedQuestCount: 16,
+          revealedFragmentCount: 16,
+          requiredApprovalCount: 16,
           isFinalUnlocked: true
         }}
       />
@@ -466,7 +466,7 @@ describe("phase 3 components", () => {
         }}
       />
     );
-    expect(screen.getByRole("status")).toHaveTextContent("5 / 21");
+    expect(screen.getByRole("status")).toHaveTextContent("5 / 16");
   });
 
   it("shows the prize link on initial load when enough quests are complete", async () => {
@@ -480,9 +480,9 @@ describe("phase 3 components", () => {
     render(
       <MapView
         map={{
-          approvedQuestCount: 21,
-          revealedFragmentCount: 21,
-          requiredApprovalCount: 21,
+          approvedQuestCount: 16,
+          revealedFragmentCount: 16,
+          requiredApprovalCount: 16,
           isFinalUnlocked: true
         }}
       />
@@ -492,7 +492,7 @@ describe("phase 3 components", () => {
       screen.getByRole("link", { name: "Otwórz zdjęcie finalnej nagrody" })
     ).toHaveAttribute("href", "/final-prize-photo.jpg");
     expect(
-      screen.queryByText("Finalny skarb pozostaje zablokowany. Zdobądź 21 zatwierdzonych misji, aby go odkryć!")
+      screen.queryByText("Finalny skarb pozostaje zablokowany. Zdobądź 16 zatwierdzonych misji, aby go odkryć!")
     ).not.toBeInTheDocument();
   });
 
@@ -510,14 +510,14 @@ describe("phase 3 components", () => {
         map={{
           approvedQuestCount: 1,
           revealedFragmentCount: 1,
-          requiredApprovalCount: 21,
+          requiredApprovalCount: 16,
           isFinalUnlocked: false
         }}
       />
     );
 
     // Initial state: 1 fragment revealed
-    expect(screen.getByRole("status")).toHaveTextContent("1 / 21");
+    expect(screen.getByRole("status")).toHaveTextContent("1 / 16");
 
     // Rerender with 2 fragments revealed
     rerender(
@@ -525,22 +525,22 @@ describe("phase 3 components", () => {
         map={{
           approvedQuestCount: 2,
           revealedFragmentCount: 2,
-          requiredApprovalCount: 21,
+          requiredApprovalCount: 16,
           isFinalUnlocked: false
         }}
       />
     );
 
-    // Should still show 1 / 21 initially because animation is playing
-    expect(screen.getByRole("status")).toHaveTextContent("1 / 21");
+    // Should still show 1 / 16 initially because animation is playing
+    expect(screen.getByRole("status")).toHaveTextContent("1 / 16");
     
     // Fast-forward animation
     act(() => {
       vi.advanceTimersByTime(2000);
     });
 
-    // Should now show 2 / 21
-    expect(screen.getByRole("status")).toHaveTextContent("2 / 21");
+    // Should now show 2 / 16
+    expect(screen.getByRole("status")).toHaveTextContent("2 / 16");
     
     vi.useRealTimers();
   });
@@ -561,7 +561,7 @@ describe("phase 3 components", () => {
         map={{
           approvedQuestCount: 1,
           revealedFragmentCount: 1,
-          requiredApprovalCount: 21,
+          requiredApprovalCount: 16,
           isFinalUnlocked: false
         }}
       />
@@ -573,7 +573,7 @@ describe("phase 3 components", () => {
         map={{
           approvedQuestCount: 2,
           revealedFragmentCount: 2,
-          requiredApprovalCount: 21,
+          requiredApprovalCount: 16,
           isFinalUnlocked: false
         }}
       />
@@ -585,7 +585,7 @@ describe("phase 3 components", () => {
     });
 
     // Animation should still proceed despite audio error (no crash)
-    expect(screen.getByRole("status")).toHaveTextContent("1 / 21");
+    expect(screen.getByRole("status")).toHaveTextContent("1 / 16");
 
     window.HTMLAudioElement.prototype.play = originalPlay;
   });
@@ -601,9 +601,9 @@ describe("phase 3 components", () => {
     const { container } = render(
       <MapView
         map={{
-          approvedQuestCount: 20,
-          revealedFragmentCount: 20,
-          requiredApprovalCount: 21,
+          approvedQuestCount: 15,
+          revealedFragmentCount: 15,
+          requiredApprovalCount: 16,
           isFinalUnlocked: false
         }}
       />
@@ -623,9 +623,9 @@ describe("phase 3 components", () => {
     const { rerender } = render(
       <MapView
         map={{
-          approvedQuestCount: 20,
-          revealedFragmentCount: 20,
-          requiredApprovalCount: 21,
+          approvedQuestCount: 15,
+          revealedFragmentCount: 15,
+          requiredApprovalCount: 16,
           isFinalUnlocked: false
         }}
       />
@@ -634,9 +634,9 @@ describe("phase 3 components", () => {
     rerender(
       <MapView
         map={{
-          approvedQuestCount: 21,
-          revealedFragmentCount: 21,
-          requiredApprovalCount: 21,
+          approvedQuestCount: 16,
+          revealedFragmentCount: 16,
+          requiredApprovalCount: 16,
           isFinalUnlocked: true
         }}
       />
@@ -740,7 +740,7 @@ const pendingReview = (
   map: {
     approvedQuestCount: 3,
     revealedFragmentCount: 3,
-    requiredApprovalCount: 21,
+    requiredApprovalCount: 16,
     isFinalUnlocked: false
   }
 });

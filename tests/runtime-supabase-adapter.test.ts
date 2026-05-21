@@ -130,9 +130,9 @@ describe("SupabaseRuntimeRepository", () => {
     fake.failNext("single boom");
     await expect(repository.getTeam("team-ember")).rejects.toThrow("single boom");
     fake.clear("app_settings");
-    await expect(repository.getTeamMapState("team-ember")).rejects.toThrow(
-      "Expected Supabase row was not returned."
-    );
+    await expect(repository.getTeamMapState("team-ember")).resolves.toMatchObject({
+      requiredApprovalCount: 16
+    });
     fake.resetSettings();
     fake.failOnTable("app_settings", "row boom");
     await expect(repository.getTeamMapState("team-ember")).rejects.toThrow(
@@ -402,7 +402,7 @@ class FakeSupabase {
     app_settings: [
       {
         id: "global",
-        required_approval_count: 21,
+        required_approval_count: 16,
         is_paused: false,
         updated_at: "2026-05-21T09:00:00.000Z"
       }
@@ -455,7 +455,7 @@ class FakeSupabase {
     this.tables.app_settings = [
       {
         id: "global",
-        required_approval_count: 21,
+        required_approval_count: 16,
         is_paused: false,
         updated_at: "2026-05-21T09:00:00.000Z"
       }

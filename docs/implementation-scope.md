@@ -27,7 +27,7 @@
 - Submission detail view.
 - Approve submission.
 - Reject submission with reason/message.
-- Show full map after 21 approved quests for a team.
+- Show full map after 16 approved quests for a team.
 - Unlock final prize photo.
 - Persist player submissions, review actions, team quest progress, map progress, final unlock state, and audit events through Supabase.
 

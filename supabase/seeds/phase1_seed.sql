@@ -3,6 +3,14 @@ values
   ('team-ember', 'Druzyna Zarzewia', 'phase1-placeholder-pin-hash-ember'),
   ('team-iron', 'Druzyna Zelaza', 'phase1-placeholder-pin-hash-iron');
 
+insert into public.app_settings (id, required_approval_count, is_paused)
+values ('global', 16, false)
+on conflict (id) do update
+set
+  required_approval_count = excluded.required_approval_count,
+  is_paused = excluded.is_paused,
+  updated_at = now();
+
 insert into public.quests (
   id,
   slug,

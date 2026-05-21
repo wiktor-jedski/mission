@@ -2,7 +2,7 @@
 
   ## Summary
 
-  Build a rugged one-day Next.js + Supabase web app for two teams, QR-discovered quests, proof-link submission, admin approval, linear map reveal after 21 approved quests,
+  Build a rugged one-day Next.js + Supabase web app for two teams, QR-discovered quests, proof-link submission, admin approval, linear map reveal after 16 approved quests,
   and final prize photo unlock.
 
   Coverage gate for every phase: 100% statements, branches, and functions for all committed application code using Vitest/V8 coverage. E2E tests are required for critical
@@ -48,7 +48,7 @@
 
   - 2 teams
   - 21 quests
-  - 21 approvals required for full map reveal
+  - 16 approvals required for full map reveal
   - submission statuses: pending, approved, rejected
   - team quest statuses: not_started, pending_review, approved, rejected, skipped
 
@@ -56,7 +56,7 @@
 
   - Schema supports all MVP flows without direct media storage.
   - Seed data creates two teams and 21 unguessable quest slugs.
-  - Domain tests cover map progress, duplicate submission prevention, rejection/resubmission, and 21-approval final unlock.
+  - Domain tests cover map progress, duplicate submission prevention, rejection/resubmission, and 16-approval final unlock.
   - Audit-log helper exists for major actions.
   - 100% statements/branches/functions coverage passes.
 
@@ -91,7 +91,7 @@
   - Rejection stores reason/message, marks team quest rejected, allows resubmission, and writes an audit event.
   - Approving the same quest twice cannot increment map progress twice.
   - A team sees exactly its own revealed fragment count.
-  - At 21 approved quests, the team sees full map state and final prize photo access.
+  - At 16 approved quests, the team sees full map state and final prize photo access.
   - The other team’s progress remains private and independent.
   - Playwright covers the core loop: team login -> quest submit -> admin approve -> map reveal.
   - 100% statements/branches/functions coverage passes.
@@ -201,7 +201,7 @@
   - duplicate pending/approved submission is blocked
   - rejected quest can be resubmitted
   - approval increments map progress once
-  - 21 approvals unlock full map and final prize photo
+  - 16 approvals unlock full map and final prize photo
   - admin-only proof visibility
   - admin override paths write audit logs
   - production smoke test on mobile and laptop

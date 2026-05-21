@@ -11,7 +11,7 @@
 ### Required Map Progress
 
 - Decision: create 21 quests.
-- Decision: require 21 approved quests to reveal the full map.
+- Decision: require 16 approved quests to reveal the full map.
 - Quest order does not matter; any approved quest reveals the next fixed fragment.
 
 ### Final Prize Race
@@ -128,7 +128,7 @@ Decision: applied
 ### Final Prize Photo Asset
 
 - Add the event's final prize photo as `public/final-prize-photo.jpg` before the event.
-- The `/map` page links to that file only after the current team reaches 21 approved quests.
+- The `/map` page links to that file only after the current team reaches 16 approved quests.
 
 Decision: completed
 

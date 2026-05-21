@@ -21,7 +21,7 @@ describe("domain constants", () => {
   it("defines the fixed Phase 1 game constants", () => {
     expect(TEAM_COUNT).toBe(2);
     expect(QUEST_COUNT).toBe(21);
-    expect(REQUIRED_APPROVAL_COUNT).toBe(21);
+    expect(REQUIRED_APPROVAL_COUNT).toBe(16);
     expect(SUBMISSION_STATUSES).toEqual(["pending", "approved", "rejected"]);
     expect(TEAM_QUEST_STATUSES).toEqual([
       "not_started",

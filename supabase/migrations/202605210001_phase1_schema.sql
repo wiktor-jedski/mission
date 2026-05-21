@@ -67,13 +67,13 @@ create table public.audit_logs (
 
 create table public.app_settings (
   id text primary key default 'global' check (id = 'global'),
-  required_approval_count integer not null default 21 check (required_approval_count > 0 and required_approval_count <= 25),
+  required_approval_count integer not null default 16 check (required_approval_count > 0 and required_approval_count <= 25),
   is_paused boolean not null default false,
   updated_at timestamptz not null default now()
 );
 
 insert into public.app_settings (id, required_approval_count, is_paused)
-values ('global', 21, false);
+values ('global', 16, false);
 
 create index quests_slug_idx on public.quests (slug);
 create index submissions_pending_idx on public.submissions (submitted_at)

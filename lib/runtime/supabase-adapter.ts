@@ -528,8 +528,15 @@ export class SupabaseRuntimeRepository implements RuntimeRepository {
       .from("app_settings")
       .select("*")
       .eq("id", "global")
-      .single();
-    return requireRow(result, mapAppSettings);
+      .maybeSingle();
+
+    if (result.error) {
+      throw new Error(result.error.message);
+    }
+
+    return result.data
+      ? mapAppSettings(result.data)
+      : { requiredApprovalCount: REQUIRED_APPROVAL_COUNT, isPaused: false };
   }
 
   private async buildReview(
@@ -673,21 +680,6 @@ const requireRows = <Row>(result: QueryManyResult<Row>): Row[] => {
   }
 
   return result.data ?? [];
-};
-
-const requireRow = <Row, Value>(
-  result: QueryResult<Row>,
-  map: (row: Row) => Value
-): Value => {
-  if (result.error) {
-    throw new Error(result.error.message);
-  }
-
-  if (!result.data) {
-    throw new Error("Expected Supabase row was not returned.");
-  }
-
-  return map(result.data);
 };
 
 const maybeRow = <Row, Value>(

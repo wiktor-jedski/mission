@@ -58,7 +58,7 @@ export function MapView({ map }: MapViewProps) {
     }
   }, [map.revealedFragmentCount, prevCount, preferences, loaded]);
 
-  const totalFragments = map.requiredApprovalCount || 21;
+  const totalFragments = map.requiredApprovalCount || 16;
   const fragments = Array.from({ length: totalFragments }, (_, i) => i + 1);
 
   // The number we show as 'statically' revealed depends on animation state

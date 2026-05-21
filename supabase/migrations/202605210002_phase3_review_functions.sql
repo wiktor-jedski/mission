@@ -49,7 +49,7 @@ begin
   update public.teams
   set
     completed_quest_count = least(approved_count, 25),
-    map_progress_count = least(approved_count, 21)
+    map_progress_count = least(approved_count, 16)
   where id = reviewed_submission.team_id;
 
   insert into public.audit_logs (
