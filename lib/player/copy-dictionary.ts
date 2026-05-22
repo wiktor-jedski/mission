@@ -6,7 +6,7 @@ export const PL_DICTIONARY = {
   nav: {
     start: "Start",
     submissions: "Zgłoszenia",
-    map: "Mapa",
+    map: "Blant",
     logout: "Wyloguj się",
     login: "Zaloguj drużynę",
     adminList: "Lista zgłoszeń",
@@ -22,16 +22,14 @@ export const PL_DICTIONARY = {
 
   // Intro
   intro: {
-    title: "Rozdział 1",
-    message: "Wkraczasz do świata pełnego tajemnic. Rozwiąż zagadki, otwórz pradawne zamki i znajdź drogę do legendarnego skarbu.",
-    skipButton: "Pomiń wstęp",
+    title: "Władca Blantów: Drużyna Ciśnienia",
+    message: "W Krainie Gastro, gdzie czerwone ślepia,\nJeden, by wszystkich skręcić, Jeden, by wszystkich sklepać,\nJeden, by wszystkich zgromadzić i w dymie powiązać\nW Krainie Gastro, gdzie kiełby się smażą.",
     continueButton: "Rozpocznij misję",
   },
 
   // Player Home
   home: {
-    title: "Mission Treasure Hunt",
-    subtitle: "Misja: Poszukiwanie Skarbu",
+    subtitle: "Władca Blantów: Drużyna Ciśnienia",
     loggedInAs: "Jesteś zalogowany jako",
     enterMission: "Wejdź do gry",
   },
@@ -66,11 +64,12 @@ export const PL_DICTIONARY = {
 
   // Map Page
   map: {
-    title: "Mapa Skarbów",
-    progressLabel: "Odkryte fragmenty mapy",
-    finalPrizeHeading: "Legendarny Skarb",
+    title: "Fragmenty Blanta",
+    progressLabel: "Zdobyte fragmenty Blanta",
+    finalPrizeHeading: "Blant odbudowany",
+    finalPrizeMessage: "Gratulacje! Zdobyliście wszystkie fragmenty i odbudowaliście Blanta.",
     openPrizeButton: "Otwórz zdjęcie finalnej nagrody",
-    lockedMessage: "Finalny skarb pozostaje zablokowany. Zdobądź 16 zatwierdzonych misji, aby go odkryć!",
+    lockedMessage: "Zdobądź 16 zatwierdzonych misji, aby odbudować Blanta",
   },
 
   // Admin UI

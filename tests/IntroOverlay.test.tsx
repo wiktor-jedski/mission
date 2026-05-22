@@ -27,6 +27,34 @@ describe("IntroOverlay", () => {
     expect(container.firstChild).toBeNull();
   });
 
+  it("renders intro when forced visible even if previously skipped", () => {
+    vi.spyOn(preferencesMod, "useEffectsPreferences").mockReturnValue({
+      preferences: { animationsEnabled: true, soundEnabled: true, introSkipped: true },
+      loaded: true,
+      updatePreference: updatePreferenceMock,
+    });
+
+    render(<IntroOverlay forceVisible />);
+    expect(screen.getByText("Władca Blantów: Drużyna Ciśnienia")).toBeDefined();
+  });
+
+  it("dismisses forced visible intro after continue", () => {
+    vi.spyOn(preferencesMod, "useEffectsPreferences").mockReturnValue({
+      preferences: { animationsEnabled: false, soundEnabled: true, introSkipped: true },
+      loaded: true,
+      updatePreference: updatePreferenceMock,
+    });
+
+    render(<IntroOverlay forceVisible />);
+    fireEvent.click(screen.getByText("Rozpocznij misję"));
+
+    act(() => {
+      vi.advanceTimersByTime(0);
+    });
+
+    expect(screen.queryByText("Rozpocznij misję")).toBeNull();
+  });
+
   it("renders intro when not skipped", () => {
     vi.spyOn(preferencesMod, "useEffectsPreferences").mockReturnValue({
       preferences: { animationsEnabled: true, soundEnabled: true, introSkipped: false },
@@ -35,9 +63,10 @@ describe("IntroOverlay", () => {
     });
     
     render(<IntroOverlay />);
-    expect(screen.getByText("Rozdział 1")).toBeDefined();
+    expect(screen.getByText("Władca Blantów: Drużyna Ciśnienia")).toBeDefined();
+    expect(screen.getByText(/W Krainie Gastro, gdzie czerwone ślepia/)).toBeDefined();
     expect(screen.getByText("Rozpocznij misję")).toBeDefined();
-    expect(screen.getByText("Pomiń wstęp")).toBeDefined();
+    expect(screen.queryByText("Pomiń wstęp")).toBeNull();
   });
 
   it("triggers fade out and updates preferences on continue", () => {
@@ -68,9 +97,9 @@ describe("IntroOverlay", () => {
     });
     
     render(<IntroOverlay />);
-    const skipBtn = screen.getByText("Pomiń wstęp");
+    const continueBtn = screen.getByText("Rozpocznij misję");
     
-    fireEvent.click(skipBtn);
+    fireEvent.click(continueBtn);
     
     act(() => {
       vi.advanceTimersByTime(0);

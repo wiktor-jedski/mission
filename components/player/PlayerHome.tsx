@@ -10,7 +10,6 @@ export default function PlayerHomeComponent({ teamName }: PlayerHomeProps) {
   return (
     <main className="page-shell">
       <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-        <p className="eyebrow">{PL_DICTIONARY.home.title}</p>
         <h1>{PL_DICTIONARY.home.subtitle}</h1>
       </div>
       
@@ -18,6 +17,9 @@ export default function PlayerHomeComponent({ teamName }: PlayerHomeProps) {
         <div className="panel-rugged" style={{ textAlign: "center", gap: "1.25rem" }}>
           <p style={{ fontSize: "1.1rem" }}>
             {PL_DICTIONARY.home.loggedInAs} <strong>{teamName}</strong>.
+          </p>
+          <p style={{ marginTop: "2.5rem", whiteSpace: "pre-line", lineHeight: 1.6 }}>
+            {PL_DICTIONARY.intro.message}
           </p>
           <nav className="inline-nav" aria-label="Nawigacja gracza" style={{ justifyContent: "center", margin: "1rem 0 0 0" }}>
             <Link href="/map">{PL_DICTIONARY.nav.map}</Link>

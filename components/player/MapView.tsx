@@ -134,7 +134,7 @@ export function MapView({ map }: MapViewProps) {
             <h2 id="final-prize-heading" style={{ color: "var(--text-gold)" }}>
               {PL_DICTIONARY.map.finalPrizeHeading}
             </h2>
-            <p>Gratulacje! Odkryliście pełną mapę i odnaleźliście legendarny skarb!</p>
+            <p>{PL_DICTIONARY.map.finalPrizeMessage}</p>
             <a href="/final-prize-photo.jpg" target="_blank" rel="noopener noreferrer" className="btn-tactile">
               {PL_DICTIONARY.map.openPrizeButton}
             </a>

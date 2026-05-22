@@ -43,8 +43,8 @@ describe("player components", () => {
     render(await Home());
 
     expect(
-      screen.getByRole("heading", { level: 1, name: "Misja: Poszukiwanie Skarbu" })
-    ).toBeInTheDocument();
+      screen.getAllByRole("heading", { level: 1, name: "Władca Blantów: Drużyna Ciśnienia" })
+    ).toHaveLength(2);
     expect(screen.getByRole("link", { name: "Zaloguj drużynę" })).toHaveAttribute(
       "href",
       "/login"
@@ -56,6 +56,7 @@ describe("player components", () => {
 
     expect(screen.getByText(/Jesteś zalogowany jako/)).toBeInTheDocument();
     expect(screen.getByText("Druzyna Zarzewia")).toBeInTheDocument();
+    expect(screen.getByText(/W Krainie Gastro, gdzie czerwone ślepia/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Zgłoszenia" })).toHaveAttribute(
       "href",
       "/submissions"
@@ -440,7 +441,9 @@ describe("phase 3 components", () => {
     );
 
     expect(screen.getByRole("status")).toHaveTextContent("15 / 16");
-    expect(screen.getByText("Finalny skarb pozostaje zablokowany. Zdobądź 16 zatwierdzonych misji, aby go odkryć!")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "Fragmenty Blanta" })).toBeInTheDocument();
+    expect(screen.getByText("Zdobyte fragmenty Blanta")).toBeInTheDocument();
+    expect(screen.getByText("Zdobądź 16 zatwierdzonych misji, aby odbudować Blanta")).toBeInTheDocument();
 
     rerender(
       <MapView
@@ -452,6 +455,10 @@ describe("phase 3 components", () => {
         }}
       />
     );
+    expect(screen.getByRole("heading", { level: 2, name: "Blant odbudowany" })).toBeInTheDocument();
+    expect(
+      screen.getByText("Gratulacje! Zdobyliście wszystkie fragmenty i odbudowaliście Blanta.")
+    ).toBeInTheDocument();
     expect(
       screen.getByRole("link", { name: "Otwórz zdjęcie finalnej nagrody" })
     ).toHaveAttribute("href", "/final-prize-photo.jpg");
@@ -492,7 +499,7 @@ describe("phase 3 components", () => {
       screen.getByRole("link", { name: "Otwórz zdjęcie finalnej nagrody" })
     ).toHaveAttribute("href", "/final-prize-photo.jpg");
     expect(
-      screen.queryByText("Finalny skarb pozostaje zablokowany. Zdobądź 16 zatwierdzonych misji, aby go odkryć!")
+      screen.queryByText("Zdobądź 16 zatwierdzonych misji, aby odbudować Blanta")
     ).not.toBeInTheDocument();
   });
 

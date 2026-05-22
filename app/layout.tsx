@@ -15,7 +15,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Misja: Poszukiwanie Skarbu",
+  title: "Władca Blantów: Drużyna Ciśnienia",
   description: "Interaktywna gra terenowa - poszukiwanie skarbu.",
 };
 
@@ -30,4 +30,3 @@ export default function RootLayout({
     </html>
   );
 }
-

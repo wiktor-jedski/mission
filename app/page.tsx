@@ -20,7 +20,7 @@ export default async function Home() {
 
   return (
     <>
-      <IntroOverlay />
+      <IntroOverlay forceVisible={!team} />
       <PlayerHome teamName={team?.name} />
     </>
   );
